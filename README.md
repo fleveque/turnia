@@ -51,7 +51,8 @@ Postgres runs on **5433** so it doesn't collide with a Postgres installed on the
 
 ## Roadmap
 
-Each milestone is one pull request, with a lesson and a code walkthrough. From milestone 4, merging
+Each milestone is one or more small pull requests, each with a code walkthrough, and the milestone
+ends with a lesson. From milestone 4, merging
 a pull request deploys it.
 
 | # | Milestone | |
