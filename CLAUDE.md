@@ -79,6 +79,9 @@ Review the author's `httpx.Logger`, then lesson + walkthrough 01. Milestone 2 â€
 ## Learned the hard way
 
 - Host port 5432 is taken by a local Postgres on the author's machine: dev Postgres is on **5433**.
+- The Go module is in `backend/`, not the root. `go.work` at the root (`use ./backend`) lets `go`
+  commands and gopls work from the root, with paths like `./backend/...`; package paths in
+  `go test ./internal/...` are relative to the current directory, so those run from `backend/`.
 - `postgres:18` images keep data in a versioned subdirectory: mount the volume at
   `/var/lib/postgresql`, not `/var/lib/postgresql/data`.
 - The compose `turnia` user is a superuser, and superusers bypass RLS even with `FORCE`. RLS tests
