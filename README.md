@@ -7,7 +7,7 @@ Turnia replaces the Excel file pinned to the stockroom wall. It is open source (
 being built in public, in small pull requests, by someone learning Go and React while doing it —
 see [Learning](#learning).
 
-> **Status:** milestone 0 — design and repository. Nothing runs yet beyond the development database.
+> **Status:** milestone 1 — the Go server skeleton. `make run` serves `/api/v1/healthz`.
 
 ## What it does (MVP)
 
@@ -51,13 +51,14 @@ Postgres runs on **5433** so it doesn't collide with a Postgres installed on the
 
 ## Roadmap
 
-Each milestone is one pull request, with a lesson and a code walkthrough. From milestone 4, merging
+Each milestone is one or more small pull requests, each with a code walkthrough, and the milestone
+ends with a lesson. From milestone 4, merging
 a pull request deploys it.
 
 | # | Milestone | |
 |---|---|---|
-| 0 | Repository, design, decisions | ◐ |
-| 1 | Go server skeleton: config, logging, health check, errors, graceful shutdown | |
+| 0 | Repository, design, decisions | ✓ |
+| 1 | Go server skeleton: config, logging, health check, errors, graceful shutdown | ◐ |
 | 2 | Postgres: pool, migrations, sqlc | |
 | 3 | Tenancy with row-level security | |
 | 4 | Deploy: image, Kamal, merge-to-deploy, backups — live on a beta host | |

@@ -7,12 +7,16 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
 
 ## Status — 2026-10-09
 
-- Milestone 0 (this PR): design, ADRs 0001–0008 (0004: Kamal to the shared VPS), compose Postgres on 5433, Makefile, lesson tooling,
-  docs CI. No application code yet.
+- Milestone 0 merged (#1): design, ADRs 0001–0008 (0004: Kamal to the shared VPS), compose
+  Postgres on 5433, Makefile, lesson tooling, docs CI.
+- Milestone 1 (in progress): Go server skeleton — `internal/config`, `internal/platform/httpx`
+  (JSON, RFC 9457 problems, Recover), `internal/server` (routes, timeouts, graceful `Run`),
+  `cmd/turnia serve`. **The author is writing `httpx.Logger`** (their first "your turn"); its tests
+  fail on purpose until then. Lesson 01 and walkthrough 01 are written after their code lands.
 
 ## Next
 
-Milestone 1 — Go server skeleton (README roadmap). Then one milestone per PR, in roadmap order.
+Review the author's `httpx.Logger`, then lesson + walkthrough 01. Milestone 2 — Postgres (README roadmap). Then one milestone per PR, in roadmap order.
 
 ## Conventions
 
@@ -25,15 +29,21 @@ Milestone 1 — Go server skeleton (README roadmap). Then one milestone per PR, 
 - **No passwords** (ADR 0003): sign-in is an email with a 6-digit code *and* a link, because an
   installed iOS PWA doesn't share cookies with Safari, where Mail opens links. Invite-only. Google
   sign-in comes after the MVP and links to existing users by verified email.
-- **One milestone = one PR = one idea**, about 150–400 lines of real code (generated code and
-  lockfiles aside). Don't fold the next milestone into the current one.
-- **Every milestone ships a lesson**: `docs/lessons/NN-*.md` (NN = milestone number), in the author's
+- **Small PRs; a milestone is as many PRs as it needs.** Each PR is one concept the author can
+  review and understand in one sitting: **about 250 lines of Go/TS/SQL including tests, ideally
+  less**, and rarely more than five or six files (generated code, lockfiles and docs not counted).
+  Tests count because they're half of what gets read. Plan a milestone's PRs before starting it,
+  name them `milestone-N/<topic>` (e.g. `milestone-2/pool`, `milestone-2/migrations`) and title them
+  "Milestone N.k: …". Each PR builds, passes CI and is useful on its own, so it can be merged before
+  the next one is opened. Milestone 1 (#2, ~830 lines) was too big and is the cautionary example: it
+  should have been config + `turnia serve`, then `httpx`, then `server` with graceful shutdown.
+- **Every milestone ships a lesson**, written with its last PR: `docs/lessons/NN-*.md` (NN = milestone number), in the author's
   first person — someone who writes Elixir and Ruby daily, learned some Go in quantic-agent-go
   (modules, `net/http` client, errors, `context`, goose, SQLite) and is new to React. Build on that;
   don't re-teach it. Plus a formatted page published as an artifact, linked from the lesson and
   `docs/lessons/README.md`.
-- **…and a code walkthrough** for every milestone with code: a second artifact going through every
-  file the PR adds or changes, in reading order, as a tech lead mentoring someone new to the
+- **…and every PR with code ships its walkthrough** with it, so the walkthrough is as short as the
+  PR and is read during review: a second artifact going through every file the PR adds or changes, in reading order, as a tech lead mentoring someone new to the
   language: what each part does, why it's written that way, what the standard library or dependency
   does underneath, why each pointer is a pointer. Excerpts are copied verbatim from a named commit
   with `docs/lessons/pages/build.py`; "try it" boxes show real outputs, usually by breaking the code
@@ -41,8 +51,11 @@ Milestone 1 — Go server skeleton (README roadmap). Then one milestone per PR, 
   genuinely helps.
 - Every page uses the stylesheet in `docs/lessons/pages/` (carried over from quantic-agent). Reuse it,
   don't redesign it.
-- **"Your turn"**: each PR description offers one small, bounded piece the author may write
-  themselves (tests and skeleton provided). Default: Claude writes everything.
+- **"Your turn"**: a PR may offer one small, bounded piece the author writes themselves: a stub with
+  its doc comment, plus the tests that specify it, checked beforehand against a reference
+  implementation kept out of the repo. CI is red until they push it; Claude reviews it on the PR,
+  then the walkthrough and lesson use their code. Ask before each milestone which piece, if any,
+  they want; the author took `httpx.Logger` in milestone 1.
 - **Decisions are ADRs** in `docs/decisions/NNNN-*.md`, indexed in its README.
 - **`main` is protected** like quantic-agent's: PR required (0 approvals), admins included, linear
   history, conversations resolved, required checks. Branch → PR → CI green → the author merges.
@@ -66,6 +79,9 @@ Milestone 1 — Go server skeleton (README roadmap). Then one milestone per PR, 
 ## Learned the hard way
 
 - Host port 5432 is taken by a local Postgres on the author's machine: dev Postgres is on **5433**.
+- The Go module is in `backend/`, not the root. `go.work` at the root (`use ./backend`) lets `go`
+  commands and gopls work from the root, with paths like `./backend/...`; package paths in
+  `go test ./internal/...` are relative to the current directory, so those run from `backend/`.
 - `postgres:18` images keep data in a versioned subdirectory: mount the volume at
   `/var/lib/postgresql`, not `/var/lib/postgresql/data`.
 - The compose `turnia` user is a superuser, and superusers bypass RLS even with `FORCE`. RLS tests
