@@ -41,8 +41,18 @@ These are not traded for convenience. Later sections refer to them as N1–N6.
 ## 3. Users and tenants
 
 - A **pharmacy** is a tenant. Everything else belongs to exactly one pharmacy.
-- A **user** belongs to one pharmacy and has a role: `admin` (plans shifts, manages employees) or
-  `employee` (sees their own shifts and hours).
+- A **user** belongs to one pharmacy and has a role: `admin` (plans shifts, manages employees and
+  settings) or `employee`.
+- **Everyone in a pharmacy sees everyone's shifts** — who works when is how a team organises itself
+  — but **only admins create, edit or delete them**. The single exception is a swap (below), which
+  employees make between themselves and which the system carries out and records.
+- What employees do **not** see about colleagues: their hours and contract, and the details of an
+  absence. A colleague's sick leave shows as *Ausente* with no type or notes; the reason for an
+  absence can be health data (GDPR, special category), and only the person and admins need it.
+- **Shift swaps** (a per-pharmacy setting, off by default): an employee proposes exchanging one of
+  their shifts for a colleague's; if the colleague accepts, both shifts change hands in one
+  transaction. Swapped shifts are marked as such, and every step — proposed, accepted, declined,
+  cancelled — is in the audit log. See [ADR 0007](decisions/0007-shift-swaps-between-employees.md).
 - Email is unique across Turnia, so logging in needs no pharmacy code. An employee working in two
   pharmacies is out of scope for the MVP; when it arrives, a `memberships` table replaces
   `users.pharmacy_id` without changing how tenancy is enforced.
@@ -98,11 +108,12 @@ time, so they index well. All timestamps are `timestamptz`; a pharmacy has a tim
 
 | Table | Purpose |
 |---|---|
-| `pharmacies` | the tenant: name, time zone, default locale, `plan` (`free` for now; billing later) |
+| `pharmacies` | the tenant: name, time zone, default locale, `plan` (`free` for now; billing later), settings such as `swaps_enabled` |
 | `users` | name, email, password hash, role, locale (`es`/`ca`), active, weekly contract hours |
 | `shift_types` | per pharmacy: name, colour, icon, `kind` (`regular`, `on_call`, `absence`), whether it counts as hours |
 | `shifts` | type, assignee (nullable: an unassigned shift), start, end, notes, `last_changed_at` |
-| `shift_events` | the audit log: shift, actor, action, before/after as JSON, time — append-only |
+| `shift_swaps` | a swap proposal: who asks, which of their shifts, whom, which of theirs, status (`pending`, `accepted`, `declined`, `cancelled`, `expired`), message, times |
+| `shift_events` | the audit log: shift, actor, action, before/after as JSON, the swap involved if any, time — append-only |
 | `refresh_tokens` | hashed, rotated refresh tokens |
 
 Rules the database enforces, not the application:
@@ -112,12 +123,18 @@ Rules the database enforces, not the application:
   `(user_id, tstzrange(starts_at, ends_at))`;
 - every row of every tenant table is filtered by the current pharmacy (N1);
 - every change to `shifts` writes a `shift_events` row, and `shift_events` cannot be updated or
-  deleted by the application (N2).
+  deleted by the application (N2); so does every status change of a `shift_swaps` row, on both
+  shifts involved;
+- a shift has at most one pending swap at a time (a partial unique index);
+- the overlap constraint is checked at commit (`DEFERRABLE`) inside a swap, so exchanging two
+  shifts doesn't trip over its own intermediate state — but a swap that would double-book either
+  person still fails.
 
 **Derived, not stored**: whether a shift falls on a weekend (and, later, a public holiday) is
 computed from its local date and returned by the API as a flag, so the frontend does not
-re-implement business rules. "Changed" means the shift's times, assignee or type were edited after
-it was created.
+re-implement business rules. "Changed" means an admin edited the shift's times, assignee or type
+after creating it; "swapped" means it changed hands through an accepted swap, with whom and when.
+The two are separate badges.
 
 **Hours**: for a person and a date range, the API returns minutes *worked* (before now), *planned*
 (after now; a shift in progress is split at now), the *contract* expectation, and a breakdown by
@@ -139,9 +156,15 @@ REST over JSON under `/api/v1`, errors as RFC 9457 `application/problem+json`.
 | GET, POST | `/employees` | admin |
 | PATCH | `/employees/{id}` | admin |
 | GET | `/employees/{id}/hours?from&to` | admin |
-| GET, POST | `/shifts` | admin |
+| GET | `/shifts?from&to&user_id` — the whole team's shifts (absences redacted for employees) | signed in |
+| POST | `/shifts` | admin |
 | PATCH, DELETE | `/shifts/{id}` | admin |
 | GET | `/shifts/{id}/history` | admin; an employee for their own shifts |
+| GET | `/swaps?status` — swaps I'm part of (admin: all) | signed in |
+| POST | `/swaps` — propose: my shift, their shift, a message | employee, if swaps are enabled |
+| POST | `/swaps/{id}/accept`, `/swaps/{id}/decline` | the colleague asked |
+| POST | `/swaps/{id}/cancel` | the employee who asked; an admin |
+| GET, PATCH | `/pharmacy` — name, time zone, settings (`swaps_enabled`) | signed in / admin |
 
 Date ranges are capped (about two months) so no request scans a pharmacy's whole history.
 
@@ -150,11 +173,18 @@ Date ranges are capped (about two months) so no request scans a pharmacy's whole
 - **Mi semana** (my week) is the home screen. On a phone: seven day cards stacked vertically, today
   highlighted, previous/next week by swipe or buttons. From a tablet up: a seven-column grid.
 - **A shift card** shows the type's colour, icon and name, the time range and duration. Badges:
-  *Guardia*, *Fin de semana*, *Modificado* (tapping it shows before and after). Absences are a
-  hatched full-day block. A legend is one tap away. Colours come from one set of design tokens.
+  *Guardia*, *Fin de semana*, *Modificado* (tapping it shows before and after), *Intercambiado*
+  (with whom), *Intercambio pendiente*. Absences are a hatched full-day block. A legend is one tap
+  away. Colours come from one set of design tokens.
+- **Equipo** (team) — the whole pharmacy's week, read-only for employees: a grid of people × days
+  using the same shift card, your own row first. On a phone, one day at a time with the team
+  stacked.
+- **Swaps** (when enabled) — from one of your shifts, "Proponer intercambio" lists colleagues'
+  shifts you could take without overlapping; the colleague sees the request in a small inbox and
+  accepts or declines with one tap.
 - **Hours** — a compact bar on Mi semana: worked, planned, contract.
-- **Admin** — a week grid of employees × days using the same shift card, a form to create and edit
-  shifts, an hours column per employee, the employees list, a shift's history.
+- **Admin** — the Equipo grid, made editable: a form to create and edit shifts, an hours column per
+  employee, the employees list, a shift's history, pharmacy settings (swaps on or off).
 - **Offline** — the service worker keeps the last-seen week and hours, so the screen works in a
   basement stockroom.
 - **Language** — Spanish and Catalan. The user's choice is stored on their account; before login,
@@ -169,7 +199,8 @@ In rough order of value and effort:
 3. Draft and published weeks, and "changes since you last looked".
 4. Monthly and yearly hours, exports for the payroll advisor (*gestoría*), weightings per kind.
 5. Push notifications when your shifts change.
-6. Shift swaps between employees with admin approval — built on the audit log.
+6. More swap modes: requiring an admin's approval as a setting, and giving a shift away without
+   taking one back (a *cover* request).
 7. Billing per pharmacy with Lemon Squeezy (`pharmacies.plan` is the hook).
 8. Import from the Excel file people already have.
 9. The *IA* in Turn*IA*: suggesting a schedule from constraints (contract hours, *guardia* rota,

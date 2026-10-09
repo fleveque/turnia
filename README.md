@@ -14,6 +14,9 @@ see [Learning](#learning).
 - **Mi semana** — your shifts for the week, at a glance: type (morning, afternoon, *guardia*,
   absence…), weekend, changed. Installable from the browser (PWA), works offline.
 - **Hours** — worked, still planned, and what your contract expects.
+- **Equipo** — the whole team's week, so everyone knows who's in. Only admins edit shifts.
+- **Swaps** — if the pharmacy turns it on, two employees can exchange shifts when both accept;
+  the swap shows on both shifts and is on record.
 - **Admin** — plan the week for everyone, manage employees, see any shift's history.
 - **Every shift change is recorded**: who, when, before and after.
 - **Each pharmacy's data is isolated** by the database itself, not only by the application.
@@ -53,24 +56,27 @@ Each milestone is one pull request, with a lesson and a code walkthrough.
 | 3 | Tenancy with row-level security | |
 | 4 | Auth I: register, login, access tokens, `/me` | |
 | 5 | Auth II: refresh tokens, logout, rate limit | |
-| 6 | Employees | |
-| 7 | Shift types and shifts | |
+| 6 | Employees and pharmacy settings | |
+| 7 | Shift types and shifts — the team sees all, admins edit | |
 | 8 | Audit log for shifts | |
 | 9 | Hours counters | |
-| 10 | Seed data and the OpenAPI contract | |
-| 11 | Frontend scaffold | |
-| 12 | Spanish and Catalan | |
-| 13 | API layer and mocks | |
-| 14 | **Mi semana** — the visual weekly calendar | |
-| 15 | Hours widget and change details | |
-| 16 | Frontend auth against the real API | |
-| 17 | PWA: install, offline, updates | |
-| 18 | Admin: plan the week | |
-| 19 | Admin: employees and history | |
-| 20 | Deploy | |
+| 10 | Shift swaps between employees | |
+| 11 | Seed data and the OpenAPI contract | |
+| 12 | Frontend scaffold | |
+| 13 | Spanish and Catalan | |
+| 14 | API layer and mocks | |
+| 15 | **Mi semana** — the visual weekly calendar | |
+| 16 | **Equipo** — the team's week | |
+| 17 | Hours widget and change details | |
+| 18 | Frontend auth against the real API | |
+| 19 | PWA: install, offline, updates | |
+| 20 | Swaps: propose, accept, decline | |
+| 21 | Admin: plan the week | |
+| 22 | Admin: employees, history, settings | |
+| 23 | Deploy | |
 
 After the MVP: editable shift types, public holidays, draft/published weeks, monthly hours and
-exports, push notifications, shift swaps, billing, Excel import, and the *IA* in Turn*IA* —
+exports, push notifications, more swap modes, billing, Excel import, and the *IA* in Turn*IA* —
 suggested schedules. See [design §8](docs/design.md#8-out-of-scope-for-the-mvp-designed-for).
 
 ## Learning

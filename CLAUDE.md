@@ -7,7 +7,7 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
 
 ## Status — 2026-10-09
 
-- Milestone 0 (this PR): design, ADRs 0001–0006, compose Postgres on 5433, Makefile, lesson tooling,
+- Milestone 0 (this PR): design, ADRs 0001–0007, compose Postgres on 5433, Makefile, lesson tooling,
   docs CI. No application code yet.
 
 ## Next
@@ -19,7 +19,8 @@ Milestone 1 — Go server skeleton (README roadmap). Then one milestone per PR, 
 - **The design's non-negotiables (design §2, N1–N6) are not traded for convenience.** Tenant
   isolation is enforced by RLS (ADR 0002); shift changes are audited by a trigger (ADR 0005); every
   user-facing string exists in `es` and `ca`; shift type, weekend and "changed" are never conveyed by
-  colour alone.
+  colour alone; employees see the whole team's shifts but never a colleague's hours, contract or
+  absence details, and change shifts only through swaps (ADR 0007).
 - **One milestone = one PR = one idea**, about 150–400 lines of real code (generated code and
   lockfiles aside). Don't fold the next milestone into the current one.
 - **Every milestone ships a lesson**: `docs/lessons/NN-*.md` (NN = milestone number), in the author's
@@ -58,3 +59,7 @@ Milestone 1 — Go server skeleton (README roadmap). Then one milestone per PR, 
   must connect as the non-owner app role.
 - `current_setting('app.x')` errors if the setting was never defined in the session, and returns
   `''` once a transaction-local `set_config` has ended — both fail closed with an `::uuid` cast.
+- A non-deferrable exclusion constraint is checked row by row, so exchanging the assignees of two
+  overlapping shifts fails even in a single `UPDATE`. Declared `DEFERRABLE INITIALLY IMMEDIATE`
+  and deferred in the swap transaction, it passes, and still rejects a swap that double-books at
+  commit (tried 2026-10-09).

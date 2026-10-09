@@ -21,6 +21,8 @@ because it is trusted.
 - The same trigger sets `shifts.last_changed_at` when the times, assignee or type of an existing
   shift change; the API derives the *Modificado* badge from it.
 - It ships right after the shifts table, before any real data exists: history can't be backfilled.
+- Swaps (ADR 0007) add to this: the shift events they cause carry the swap's id, and the swap's own
+  status changes are recorded on both shifts.
 
 ## Alternatives
 
