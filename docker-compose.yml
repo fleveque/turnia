@@ -1,0 +1,26 @@
+# Local development database. The app itself runs on the host (`make run`),
+# so this only needs Postgres.
+#
+# Port 5433, not 5432: a Postgres installed on the host usually has 5432.
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: turnia
+      POSTGRES_PASSWORD: turnia
+      POSTGRES_DB: turnia
+    ports:
+      - "5433:5432"
+    volumes:
+      # Postgres 18 images keep data under a versioned subdirectory of
+      # /var/lib/postgresql, so the volume mounts the parent.
+      - db-data:/var/lib/postgresql
+      - ./dev/postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U turnia -d turnia"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  db-data:
