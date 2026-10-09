@@ -152,6 +152,9 @@ where it matters (the shift package's doc comment) and to have tests that try to
 - **One origin for the app and the API** ([ADR 0003](../decisions/0003-auth-tokens-on-one-origin.md)),
   which is why the frontend won't be on Vercel: iOS Safari blocks cross-site cookies, and most
   pharmacy employees will open Turnia on an iPhone.
+- **Deployed like quantic.finance** ([ADR 0004](../decisions/0004-kamal-on-the-shared-vps.md)): Kamal,
+  same server, merging a PR deploys it. The Go binary embeds the built PWA, so one container serves
+  both. Deploys start at milestone 4, so every milestone after that is live.
 
 ## What I'm taking into milestone 1
 

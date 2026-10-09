@@ -80,13 +80,15 @@ These are not traded for convenience. Later sections refer to them as N1–N6.
             phone / desktop browser (installed PWA)
                           │  HTTPS, one origin
                           ▼
-        ┌──────────────── Caddy ────────────────┐
-        │  /          → static PWA (React build) │
-        │  /api/*     → turnia serve (Go)        │
-        └────────────────────┬───────────────────┘
-                             │ pgx, as role turnia_app (RLS applies)
-                             ▼
-                       PostgreSQL 18
+            kamal-proxy (TLS, shared with the server's other apps)
+                          │
+        ┌──────── turnia container (one Go binary) ────────┐
+        │  /          → the PWA, embedded in the binary     │
+        │  /api/*     → the API                             │
+        └────────────────────────┬─────────────────────────┘
+                                 │ pgx: turnia_app (RLS) · turnia_platform (stats)
+                                 ▼
+                     PostgreSQL 18 (Kamal accessory)
 ```
 
 - **Backend** — one Go binary, `turnia`, with subcommands `serve`, `migrate` and `seed`. Standard
@@ -97,8 +99,9 @@ These are not traded for convenience. Later sections refer to them as N1–N6.
   API's OpenAPI contract.
 - **One origin.** The app and the API are served from the same host, so the refresh-token cookie is
   first-party and there is no CORS in production. See [ADR 0003](decisions/0003-auth-tokens-on-one-origin.md).
-- **Deploy** — a single Hetzner VM running Docker Compose: Caddy, the API, Postgres, nightly
-  backups. See [ADR 0004](decisions/0004-one-hetzner-vm.md).
+- **Deploy** — Kamal, to the Hetzner VPS that already runs quantic, on every merge to `main` once CI
+  passes. One container (the Go binary with the PWA embedded), Postgres as an accessory, restic
+  backups to a NAS. See [ADR 0004](decisions/0004-kamal-on-the-shared-vps.md).
 
 ### Repository layout
 
@@ -110,7 +113,9 @@ backend/                 Go module
   db/queries/            SQL that sqlc turns into Go
   api/openapi.yaml       the API contract; the frontend's types come from it
 frontend/                Vite + React + TypeScript PWA
-deploy/                  production compose file, Caddyfile, backups
+config/deploy.yml        Kamal; secrets come from Bitwarden through .kamal/secrets
+ops/backup/              host-side backup and pre-deploy snapshot scripts
+dev/                     local-only setup (the dev database's init script)
 docs/                    this design, decisions, lessons
 ```
 

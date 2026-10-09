@@ -45,7 +45,7 @@ earn its place: each one is something to understand, not just to use.
 - **chi / Echo / Gin** — fine libraries; the 1.22 mux removed the need, and the standard library is
   what every Go codebase shares.
 - **Next.js** — server rendering buys nothing for an app behind a login, and would need a Node
-  server in production. A static PWA is served by Caddy.
+  server in production. A static PWA is embedded in the Go binary and served by it.
 - **Native apps / React Native** — app-store accounts, reviews and two codebases for a product whose
   users only need to read a schedule. A PWA installs from the browser (N3).
 

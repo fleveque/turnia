@@ -35,7 +35,7 @@ The full picture is in [docs/design.md](docs/design.md); the reasons behind the 
 |---|---|
 | Backend | Go (standard library HTTP), PostgreSQL 18, pgx, sqlc, goose; email through Resend |
 | Frontend | React, TypeScript, Vite, TanStack Query, Tailwind CSS — as a PWA |
-| Deploy | One Hetzner VM: Caddy + the Go binary + Postgres, with Docker Compose |
+| Deploy | Kamal to a Hetzner VPS on every merge to `main`: one container (Go binary with the PWA embedded) + Postgres |
 
 ## Development
 
@@ -51,7 +51,8 @@ Postgres runs on **5433** so it doesn't collide with a Postgres installed on the
 
 ## Roadmap
 
-Each milestone is one pull request, with a lesson and a code walkthrough.
+Each milestone is one pull request, with a lesson and a code walkthrough. From milestone 4, merging
+a pull request deploys it.
 
 | # | Milestone | |
 |---|---|---|
@@ -59,28 +60,29 @@ Each milestone is one pull request, with a lesson and a code walkthrough.
 | 1 | Go server skeleton: config, logging, health check, errors, graceful shutdown | |
 | 2 | Postgres: pool, migrations, sqlc | |
 | 3 | Tenancy with row-level security | |
-| 4 | Auth I: email codes and links, register, access tokens, `/me` | |
-| 5 | Auth II: refresh tokens, logout, rate limits | |
-| 6 | Employees, invitations, pharmacy settings | |
-| 7 | Shift types and shifts — the team sees all, admins edit | |
-| 8 | Audit log for shifts | |
-| 9 | Hours counters | |
-| 10 | Shift swaps between employees | |
-| 11 | Platform: Turnia staff, sign-in and aggregate stats | |
-| 12 | Seed data and the OpenAPI contract | |
-| 13 | Frontend scaffold | |
-| 14 | Spanish and Catalan | |
-| 15 | API layer and mocks | |
-| 16 | **Mi semana** — the visual weekly calendar | |
-| 17 | **Equipo** — the team's week | |
-| 18 | Hours widget and change details | |
-| 19 | Frontend auth against the real API | |
-| 20 | PWA: install, offline, updates | |
-| 21 | Swaps: propose, accept, decline | |
-| 22 | Admin: plan the week | |
-| 23 | Admin: employees, history, settings | |
-| 24 | **Plataforma** — the staff dashboard | |
-| 25 | Deploy | |
+| 4 | Deploy: image, Kamal, merge-to-deploy, backups — live on a beta host | |
+| 5 | Auth I: email codes and links, register, access tokens, `/me` | |
+| 6 | Auth II: refresh tokens, logout, rate limits | |
+| 7 | Employees, invitations, pharmacy settings | |
+| 8 | Shift types and shifts — the team sees all, admins edit | |
+| 9 | Audit log for shifts | |
+| 10 | Hours counters | |
+| 11 | Shift swaps between employees | |
+| 12 | Platform: Turnia staff, sign-in and aggregate stats | |
+| 13 | Seed data and the OpenAPI contract | |
+| 14 | Frontend scaffold — embedded in the Go binary, live from here | |
+| 15 | Spanish and Catalan | |
+| 16 | API layer and mocks | |
+| 17 | **Mi semana** — the visual weekly calendar | |
+| 18 | **Equipo** — the team's week | |
+| 19 | Hours widget and change details | |
+| 20 | Frontend auth against the real API | |
+| 21 | PWA: install, offline, updates | |
+| 22 | Swaps: propose, accept, decline | |
+| 23 | Admin: plan the week | |
+| 24 | Admin: employees, history, settings | |
+| 25 | **Plataforma** — the staff dashboard | |
+| 26 | Launch: product domain, uptime alerts, first restore drill | |
 
 After the MVP: editable shift types, public holidays, draft/published weeks, monthly hours and
 exports, push notifications, more swap modes, Google sign-in, billing, Excel import, and the *IA* in Turn*IA* —

@@ -44,7 +44,7 @@ another site are increasingly blocked, especially by Safari on iOS.
   on every use** (using an old one revokes the whole family). Delivered as a cookie:
   `HttpOnly; Secure; SameSite=Strict; Path=/api/v1/auth`. A phone stays signed in for months
   without a stored password; signing out on a shared computer revokes it.
-- **One origin**: the PWA and the API are served by the same host (Caddy, ADR 0004), the API under
+- **One origin**: the PWA and the API are served by the same Go binary (ADR 0004), the API under
   `/api`. The cookie is first-party, `SameSite=Strict` works, and production has no CORS.
 
 **Google, later, without a second account.** The account is the `users` row; the email is how you

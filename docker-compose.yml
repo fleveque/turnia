@@ -15,7 +15,7 @@ services:
       # Postgres 18 images keep data under a versioned subdirectory of
       # /var/lib/postgresql, so the volume mounts the parent.
       - db-data:/var/lib/postgresql
-      - ./deploy/postgres-init:/docker-entrypoint-initdb.d:ro
+      - ./dev/postgres-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U turnia -d turnia"]
       interval: 2s

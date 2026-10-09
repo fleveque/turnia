@@ -7,7 +7,7 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
 
 ## Status — 2026-10-09
 
-- Milestone 0 (this PR): design, ADRs 0001–0008, compose Postgres on 5433, Makefile, lesson tooling,
+- Milestone 0 (this PR): design, ADRs 0001–0008 (0004: Kamal to the shared VPS), compose Postgres on 5433, Makefile, lesson tooling,
   docs CI. No application code yet.
 
 ## Next
@@ -44,7 +44,9 @@ Milestone 1 — Go server skeleton (README roadmap). Then one milestone per PR, 
 - **"Your turn"**: each PR description offers one small, bounded piece the author may write
   themselves (tests and skeleton provided). Default: Claude writes everything.
 - **Decisions are ADRs** in `docs/decisions/NNNN-*.md`, indexed in its README.
-- **`main` is protected.** Branch → PR → CI green → the author merges. Never merge. Before pushing to
+- **`main` is protected** like quantic-agent's: PR required (0 approvals), admins included, linear
+  history, conversations resolved, required checks. Branch → PR → CI green → the author merges.
+  Never merge, never push to `main`. From milestone 4, a merge to `main` deploys. Before pushing to
   an existing branch, check its PR isn't already merged.
 - **Verify CI on the exact commit SHA** (`gh run list --json headSha`), not the PR's check list.
 - PRs are squash-merged, so a walkthrough built from a branch commit cites a SHA `main` won't have.
@@ -52,7 +54,14 @@ Milestone 1 — Go server skeleton (README roadmap). Then one milestone per PR, 
 - **Claims are verified by running them.** Lesson outputs are real outputs.
 - Gate before every commit (grows with the code): docs relative-link check (`.github/workflows/ci.yml`);
   from milestone 1 `gofmt -l .` prints nothing, `go vet ./...`, `go test -race ./...`; from
-  milestone 2 `sqlc diff`; from milestone 11 `npm run lint`, `typecheck`, `test`, `build`.
+  milestone 2 `sqlc diff`; from milestone 14 `npm run lint`, `typecheck`, `test`, `build`.
+
+## Deploying (from milestone 4)
+
+- Kamal to the VPS shared with quantic and older apps, following quantic's `docs/deploy.md`:
+  **never `kamal proxy reboot`/`remove`** (the proxy is shared), never touch other apps' volumes,
+  Kamal pinned to the ecosystem's version (2.7.0), Turnia's Postgres on `127.0.0.1:5435`.
+- Secrets live in Bitwarden (item `turnia`); no server addresses or IPs in the repo.
 
 ## Learned the hard way
 
