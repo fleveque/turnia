@@ -12,6 +12,7 @@ behind the choices where I found it non-obvious.
 | # | Lesson | Milestone | Read online | Code walkthrough |
 |---|---|---|---|---|
 | [00](00-decisions-before-code.md) | Decisions before code | 0 — repository & design | [Decisions before code](https://claude.ai/artifact/SAfdpXAmgvfTBSPWkJ3ec4) | — |
+| 01 | *(written once the logger lands)* | 1 — the Go server skeleton | — | [The server, line by line](https://claude.ai/artifact/KSNkV2CncyoiwmY3FKYdVQ) |
 
 Lessons tell the story of a milestone: what surprised me and why. A milestone is usually several
 small pull requests, and each one with code has its own walkthrough: the code itself in reading
