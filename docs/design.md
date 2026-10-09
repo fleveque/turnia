@@ -23,8 +23,11 @@ Turnia replaces the spreadsheet with:
 
 These are not traded for convenience. Later sections refer to them as N1–N6.
 
-- **N1. A pharmacy never sees another pharmacy's data.** Enforced by the database (row-level
-  security), not only by the application's queries. See [ADR 0002](decisions/0002-shared-schema-with-row-level-security.md).
+- **N1. A pharmacy never sees another pharmacy's data, and Turnia's own staff see figures, not
+  people.** Enforced by the database (row-level security), not only by the application's queries.
+  The platform dashboard reads aggregates through functions that return no names, emails or shifts.
+  See [ADR 0002](decisions/0002-shared-schema-with-row-level-security.md) and
+  [ADR 0008](decisions/0008-platform-staff-and-aggregate-stats.md).
 - **N2. No shift changes without a record.** Every create, update and delete of a shift writes an
   audit event with who, when, before and after — enforced by a database trigger, so no code path
   can skip it. See [ADR 0005](decisions/0005-audit-shifts-with-a-database-trigger.md).
@@ -40,9 +43,22 @@ These are not traded for convenience. Later sections refer to them as N1–N6.
 
 ## 3. Users and tenants
 
-- A **pharmacy** is a tenant. Everything else belongs to exactly one pharmacy.
-- A **user** belongs to one pharmacy and has a role: `admin` (plans shifts, manages employees and
-  settings) or `employee`.
+- A **pharmacy** is a tenant. Everything else belongs to exactly one pharmacy, except Turnia's own
+  staff.
+- Three roles:
+
+  | Role | Who | Can |
+  |---|---|---|
+  | **Turnia staff** (`staff`) | the people who run Turnia | see the platform dashboard: pharmacies, sign-ups, activity, usage — aggregates only; manage plans later |
+  | **Pharmacy admin** (`admin`) | the owner or manager of a pharmacy | plan and edit shifts, manage employees, see everyone's hours and history, change pharmacy settings |
+  | **Employee** (`employee`) | everyone else in the pharmacy | see their own week, hours and history, the team's shifts, and swap if enabled |
+
+- **Staff are not users of a pharmacy.** They live in their own table, sign in at their own
+  endpoint, and get a token no pharmacy endpoint accepts; a pharmacy token can't reach the platform
+  endpoints either. The first staff account is created from the command line (`turnia staff
+  create`), never through the API.
+- A pharmacy **user** belongs to one pharmacy and has the role `admin` or `employee`. A pharmacy can
+  have several admins.
 - **Everyone in a pharmacy sees everyone's shifts** — who works when is how a team organises itself
   — but **only admins create, edit or delete them**. The single exception is a swap (below), which
   employees make between themselves and which the system carries out and records.
@@ -109,7 +125,8 @@ time, so they index well. All timestamps are `timestamptz`; a pharmacy has a tim
 | Table | Purpose |
 |---|---|
 | `pharmacies` | the tenant: name, time zone, default locale, `plan` (`free` for now; billing later), settings such as `swaps_enabled` |
-| `users` | name, email, password hash, role, locale (`es`/`ca`), active, weekly contract hours |
+| `users` | name, email, password hash, role, locale (`es`/`ca`), active, weekly contract hours, `last_seen_at` (day precision, for activity figures) |
+| `staff` | Turnia's own people: name, email, password hash — no pharmacy, no RLS policy to fit into |
 | `shift_types` | per pharmacy: name, colour, icon, `kind` (`regular`, `on_call`, `absence`), whether it counts as hours |
 | `shifts` | type, assignee (nullable: an unassigned shift), start, end, notes, `last_changed_at` |
 | `shift_swaps` | a swap proposal: who asks, which of their shifts, whom, which of theirs, status (`pending`, `accepted`, `declined`, `cancelled`, `expired`), message, times |
@@ -165,6 +182,12 @@ REST over JSON under `/api/v1`, errors as RFC 9457 `application/problem+json`.
 | POST | `/swaps/{id}/accept`, `/swaps/{id}/decline` | the colleague asked |
 | POST | `/swaps/{id}/cancel` | the employee who asked; an admin |
 | GET, PATCH | `/pharmacy` — name, time zone, settings (`swaps_enabled`) | signed in / admin |
+| POST | `/platform/auth/login`, `/platform/auth/refresh`, `/platform/auth/logout` | staff |
+| GET | `/platform/stats?from&to` — totals and weekly series: pharmacies, sign-ups, active users, shifts created, swaps, plans | staff |
+| GET | `/platform/pharmacies` — one row per pharmacy: name, created, plan, number of employees, last activity, shifts this month | staff |
+
+Platform endpoints are served by the same binary but use their own connection pool, as a database
+role that can call the stats functions and nothing else (ADR 0008).
 
 Date ranges are capped (about two months) so no request scans a pharmacy's whole history.
 
@@ -185,6 +208,10 @@ Date ranges are capped (about two months) so no request scans a pharmacy's whole
 - **Hours** — a compact bar on Mi semana: worked, planned, contract.
 - **Admin** — the Equipo grid, made editable: a form to create and edit shifts, an hours column per
   employee, the employees list, a shift's history, pharmacy settings (swaps on or off).
+- **Plataforma** (Turnia staff) — a separate section with its own sign-in, loaded only for staff: a
+  row of headline figures (pharmacies, active users this week, shifts planned this week), sign-ups
+  and activity by week, plan distribution, and the pharmacies table, sortable by last activity so
+  pharmacies that stopped using Turnia stand out. Desktop first; it still works on a phone.
 - **Offline** — the service worker keeps the last-seen week and hours, so the screen works in a
   basement stockroom.
 - **Language** — Spanish and Catalan. The user's choice is stored on their account; before login,
@@ -201,7 +228,10 @@ In rough order of value and effort:
 5. Push notifications when your shifts change.
 6. More swap modes: requiring an admin's approval as a setting, and giving a shift away without
    taking one back (a *cover* request).
-7. Billing per pharmacy with Lemon Squeezy (`pharmacies.plan` is the hook).
-8. Import from the Excel file people already have.
-9. The *IA* in Turn*IA*: suggesting a schedule from constraints (contract hours, *guardia* rota,
-   holidays).
+7. Billing per pharmacy with Lemon Squeezy (`pharmacies.plan` is the hook); staff change a
+   pharmacy's plan from the dashboard. Two-factor sign-in (TOTP) for staff before any of that.
+8. Support access: a pharmacy admin grants Turnia staff temporary access to their pharmacy's data
+   to resolve an issue — time-limited, visible to the pharmacy, and audited.
+9. Import from the Excel file people already have.
+10. The *IA* in Turn*IA*: suggesting a schedule from constraints (contract hours, *guardia* rota,
+    holidays).

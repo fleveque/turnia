@@ -7,7 +7,7 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
 
 ## Status — 2026-10-09
 
-- Milestone 0 (this PR): design, ADRs 0001–0007, compose Postgres on 5433, Makefile, lesson tooling,
+- Milestone 0 (this PR): design, ADRs 0001–0008, compose Postgres on 5433, Makefile, lesson tooling,
   docs CI. No application code yet.
 
 ## Next
@@ -20,7 +20,8 @@ Milestone 1 — Go server skeleton (README roadmap). Then one milestone per PR, 
   isolation is enforced by RLS (ADR 0002); shift changes are audited by a trigger (ADR 0005); every
   user-facing string exists in `es` and `ca`; shift type, weekend and "changed" are never conveyed by
   colour alone; employees see the whole team's shifts but never a colleague's hours, contract or
-  absence details, and change shifts only through swaps (ADR 0007).
+  absence details, and change shifts only through swaps (ADR 0007); Turnia staff are a separate
+  account type that sees aggregates only, through functions `turnia_app` can't execute (ADR 0008).
 - **One milestone = one PR = one idea**, about 150–400 lines of real code (generated code and
   lockfiles aside). Don't fold the next milestone into the current one.
 - **Every milestone ships a lesson**: `docs/lessons/NN-*.md` (NN = milestone number), in the author's
@@ -63,3 +64,12 @@ Milestone 1 — Go server skeleton (README roadmap). Then one milestone per PR, 
   overlapping shifts fails even in a single `UPDATE`. Declared `DEFERRABLE INITIALLY IMMEDIATE`
   and deferred in the swap transaction, it passes, and still rejects a swap that double-books at
   commit (tried 2026-10-09).
+- Since Postgres 15, `public` grants no `CREATE` to ordinary roles: the migration owner needs
+  `GRANT CREATE, USAGE ON SCHEMA public` (or owns the schema).
+- New functions are executable by `PUBLIC` by default. Every `SECURITY DEFINER` function needs
+  `REVOKE EXECUTE … FROM PUBLIC` and an explicit grant, or every role can call it.
+- A table owner with `FORCE ROW LEVEL SECURITY` is filtered too: a `SECURITY DEFINER` function owned
+  by it sees nothing without a tenant. Cross-tenant functions are owned by a `BYPASSRLS` role.
+- A role with no grant on an RLS table may see the policy's cast error (`""` for integer) instead of
+  `permission denied`: the planner evaluates the policy expression first. Either way it's refused;
+  tests should assert refusal, not a specific message.

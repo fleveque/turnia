@@ -18,6 +18,10 @@ see [Learning](#learning).
 - **Swaps** — if the pharmacy turns it on, two employees can exchange shifts when both accept;
   the swap shows on both shifts and is on record.
 - **Admin** — plan the week for everyone, manage employees, see any shift's history.
+- **Plataforma** — for the people running Turnia: pharmacies, sign-ups, activity and usage, as
+  figures only. Turnia staff never see a pharmacy's employees or shifts.
+
+Three roles: **Turnia staff**, **pharmacy admins**, **employees**.
 - **Every shift change is recorded**: who, when, before and after.
 - **Each pharmacy's data is isolated** by the database itself, not only by the application.
 
@@ -61,19 +65,21 @@ Each milestone is one pull request, with a lesson and a code walkthrough.
 | 8 | Audit log for shifts | |
 | 9 | Hours counters | |
 | 10 | Shift swaps between employees | |
-| 11 | Seed data and the OpenAPI contract | |
-| 12 | Frontend scaffold | |
-| 13 | Spanish and Catalan | |
-| 14 | API layer and mocks | |
-| 15 | **Mi semana** — the visual weekly calendar | |
-| 16 | **Equipo** — the team's week | |
-| 17 | Hours widget and change details | |
-| 18 | Frontend auth against the real API | |
-| 19 | PWA: install, offline, updates | |
-| 20 | Swaps: propose, accept, decline | |
-| 21 | Admin: plan the week | |
-| 22 | Admin: employees, history, settings | |
-| 23 | Deploy | |
+| 11 | Platform: Turnia staff, sign-in and aggregate stats | |
+| 12 | Seed data and the OpenAPI contract | |
+| 13 | Frontend scaffold | |
+| 14 | Spanish and Catalan | |
+| 15 | API layer and mocks | |
+| 16 | **Mi semana** — the visual weekly calendar | |
+| 17 | **Equipo** — the team's week | |
+| 18 | Hours widget and change details | |
+| 19 | Frontend auth against the real API | |
+| 20 | PWA: install, offline, updates | |
+| 21 | Swaps: propose, accept, decline | |
+| 22 | Admin: plan the week | |
+| 23 | Admin: employees, history, settings | |
+| 24 | **Plataforma** — the staff dashboard | |
+| 25 | Deploy | |
 
 After the MVP: editable shift types, public holidays, draft/published weeks, monthly hours and
 exports, push notifications, more swap modes, billing, Excel import, and the *IA* in Turn*IA* —

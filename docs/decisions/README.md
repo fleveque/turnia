@@ -12,3 +12,4 @@ A decision that changes gets a new record that supersedes the old one; old recor
 | [0005](0005-audit-shifts-with-a-database-trigger.md) | Shift changes audited by a database trigger | accepted |
 | [0006](0006-agpl-3.0.md) | AGPL-3.0 | accepted |
 | [0007](0007-shift-swaps-between-employees.md) | Shift swaps between employees, both accepting | accepted |
+| [0008](0008-platform-staff-and-aggregate-stats.md) | Turnia staff are separate, and see aggregates only | accepted |

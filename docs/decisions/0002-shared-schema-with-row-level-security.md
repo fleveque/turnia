@@ -39,5 +39,5 @@ year) and there will be many of them.
 - A test suite proves isolation: data written as pharmacy A is invisible as pharmacy B, even with a
   query that deliberately omits the `pharmacy_id` filter.
 - Every tenant query runs in a transaction. That is a cost of one round trip per request, accepted.
-- Anything that must cross tenants (a future admin console, billing jobs) needs its own role and is
-  a deliberate, reviewed exception.
+- Anything that must cross tenants (the platform dashboard, billing jobs) needs its own role and is
+  a deliberate, reviewed exception. The first one is the platform dashboard ([ADR 0008](0008-platform-staff-and-aggregate-stats.md)).
