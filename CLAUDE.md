@@ -7,12 +7,16 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
 
 ## Status — 2026-10-09
 
-- Milestone 0 (this PR): design, ADRs 0001–0008 (0004: Kamal to the shared VPS), compose Postgres on 5433, Makefile, lesson tooling,
-  docs CI. No application code yet.
+- Milestone 0 merged (#1): design, ADRs 0001–0008 (0004: Kamal to the shared VPS), compose
+  Postgres on 5433, Makefile, lesson tooling, docs CI.
+- Milestone 1 (in progress): Go server skeleton — `internal/config`, `internal/platform/httpx`
+  (JSON, RFC 9457 problems, Recover), `internal/server` (routes, timeouts, graceful `Run`),
+  `cmd/turnia serve`. **The author is writing `httpx.Logger`** (their first "your turn"); its tests
+  fail on purpose until then. Lesson 01 and walkthrough 01 are written after their code lands.
 
 ## Next
 
-Milestone 1 — Go server skeleton (README roadmap). Then one milestone per PR, in roadmap order.
+Review the author's `httpx.Logger`, then lesson + walkthrough 01. Milestone 2 — Postgres (README roadmap). Then one milestone per PR, in roadmap order.
 
 ## Conventions
 
