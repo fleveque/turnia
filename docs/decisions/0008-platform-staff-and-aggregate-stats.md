@@ -15,7 +15,8 @@ who works when, or who was on sick leave.
 **Three roles, two kinds of account.**
 
 - Pharmacy accounts (`users`): `admin` and `employee`, scoped to one pharmacy, as before.
-- Turnia staff (`staff` table): no pharmacy, own sign-in at `/api/v1/platform/auth/*`. Their access
+- Turnia staff (`staff` table): no pharmacy, own sign-in at `/api/v1/platform/auth/*` (email code,
+  as everyone; ADR 0003). Their access
   token has a different audience (`aud: platform` vs `aud: pharmacy`); each side's middleware
   rejects the other's tokens. Refresh cookies are scoped to their own path. The first staff
   account is created with `turnia staff create`; there is no API to create staff.
@@ -23,8 +24,9 @@ who works when, or who was on sick leave.
 **Aggregates through functions, run as a role that can do nothing else.**
 
 - The stats are `SECURITY DEFINER` SQL functions (`platform_stats(from, to)`,
-  `platform_pharmacies()`) that return counts, dates and pharmacy names — never a person's name,
-  email, or shift.
+  `platform_pharmacies()`) that return counts, dates, pharmacy names and the pharmacy admins'
+  names and emails — the customer's contacts, needed to run the business. Never an employee's
+  name, email, or any shift.
 - They are owned by `turnia_stats_owner`: `NOLOGIN`, `BYPASSRLS`, `SELECT` on the tables the stats
   need. It can't log in; it lends its rights only to code inside those functions.
 - `EXECUTE` is revoked from `PUBLIC` (Postgres grants it to everyone by default) and granted only to

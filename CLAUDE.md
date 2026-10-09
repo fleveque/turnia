@@ -22,6 +22,9 @@ Milestone 1 — Go server skeleton (README roadmap). Then one milestone per PR, 
   colour alone; employees see the whole team's shifts but never a colleague's hours, contract or
   absence details, and change shifts only through swaps (ADR 0007); Turnia staff are a separate
   account type that sees aggregates only, through functions `turnia_app` can't execute (ADR 0008).
+- **No passwords** (ADR 0003): sign-in is an email with a 6-digit code *and* a link, because an
+  installed iOS PWA doesn't share cookies with Safari, where Mail opens links. Invite-only. Google
+  sign-in comes after the MVP and links to existing users by verified email.
 - **One milestone = one PR = one idea**, about 150–400 lines of real code (generated code and
   lockfiles aside). Don't fold the next milestone into the current one.
 - **Every milestone ships a lesson**: `docs/lessons/NN-*.md` (NN = milestone number), in the author's

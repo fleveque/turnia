@@ -25,7 +25,8 @@ These are not traded for convenience. Later sections refer to them as N1–N6.
 
 - **N1. A pharmacy never sees another pharmacy's data, and Turnia's own staff see figures, not
   people.** Enforced by the database (row-level security), not only by the application's queries.
-  The platform dashboard reads aggregates through functions that return no names, emails or shifts.
+  The platform dashboard reads aggregates through functions that return no employee's name, email
+  or shifts; the only people it names are each pharmacy's admins, Turnia's customers.
   See [ADR 0002](decisions/0002-shared-schema-with-row-level-security.md) and
   [ADR 0008](decisions/0008-platform-staff-and-aggregate-stats.md).
 - **N2. No shift changes without a record.** Every create, update and delete of a shift writes an
@@ -125,13 +126,17 @@ time, so they index well. All timestamps are `timestamptz`; a pharmacy has a tim
 | Table | Purpose |
 |---|---|
 | `pharmacies` | the tenant: name, time zone, default locale, `plan` (`free` for now; billing later), settings such as `swaps_enabled` |
-| `users` | name, email, password hash, role, locale (`es`/`ca`), active, weekly contract hours, `last_seen_at` (day precision, for activity figures) |
-| `staff` | Turnia's own people: name, email, password hash — no pharmacy, no RLS policy to fit into |
+| `users` | name, email, role, locale (`es`/`ca`), active, weekly contract hours, `last_seen_at` (day precision, for activity figures) |
+| `staff` | Turnia's own people: name, email — no pharmacy, no RLS policy to fit into |
+| `login_codes` | one sign-in or invitation email: user or staff, hashed code, hashed link token, expiry, attempts left, used at |
 | `shift_types` | per pharmacy: name, colour, icon, `kind` (`regular`, `on_call`, `absence`), whether it counts as hours |
 | `shifts` | type, assignee (nullable: an unassigned shift), start, end, notes, `last_changed_at` |
 | `shift_swaps` | a swap proposal: who asks, which of their shifts, whom, which of theirs, status (`pending`, `accepted`, `declined`, `cancelled`, `expired`), message, times |
 | `shift_events` | the audit log: shift, actor, action, before/after as JSON, the swap involved if any, time — append-only |
 | `refresh_tokens` | hashed, rotated refresh tokens |
+
+No passwords anywhere (ADR 0003). When Google sign-in arrives, a `user_identities` table (provider,
+the provider's account id) links it to the existing user; the account was never the email.
 
 Rules the database enforces, not the application:
 
@@ -165,13 +170,16 @@ REST over JSON under `/api/v1`, errors as RFC 9457 `application/problem+json`.
 | Method | Path | Who |
 |---|---|---|
 | GET | `/healthz` | anyone |
-| POST | `/auth/register` — a pharmacy and its first admin | anyone |
-| POST | `/auth/login`, `/auth/refresh`, `/auth/logout` | anyone / refresh cookie |
+| POST | `/auth/register` — a pharmacy and its first admin; emails a code | anyone |
+| POST | `/auth/code` — email me a sign-in code and link (same answer whether the email exists or not) | anyone |
+| POST | `/auth/verify` — a code with its email, or a link token → access token + refresh cookie | anyone |
+| POST | `/auth/refresh`, `/auth/logout` | refresh cookie |
 | GET, PATCH | `/me` | signed in |
 | GET | `/me/shifts?from&to`, `/me/hours?from&to` | signed in |
 | GET | `/shift-types` | signed in |
-| GET, POST | `/employees` | admin |
+| GET, POST | `/employees` — POST invites by email | admin |
 | PATCH | `/employees/{id}` | admin |
+| POST | `/employees/{id}/invitation` — send the invitation again | admin |
 | GET | `/employees/{id}/hours?from&to` | admin |
 | GET | `/shifts?from&to&user_id` — the whole team's shifts (absences redacted for employees) | signed in |
 | POST | `/shifts` | admin |
@@ -182,9 +190,9 @@ REST over JSON under `/api/v1`, errors as RFC 9457 `application/problem+json`.
 | POST | `/swaps/{id}/accept`, `/swaps/{id}/decline` | the colleague asked |
 | POST | `/swaps/{id}/cancel` | the employee who asked; an admin |
 | GET, PATCH | `/pharmacy` — name, time zone, settings (`swaps_enabled`) | signed in / admin |
-| POST | `/platform/auth/login`, `/platform/auth/refresh`, `/platform/auth/logout` | staff |
+| POST | `/platform/auth/code`, `/platform/auth/verify`, `/platform/auth/refresh`, `/platform/auth/logout` | staff |
 | GET | `/platform/stats?from&to` — totals and weekly series: pharmacies, sign-ups, active users, shifts created, swaps, plans | staff |
-| GET | `/platform/pharmacies` — one row per pharmacy: name, created, plan, number of employees, last activity, shifts this month | staff |
+| GET | `/platform/pharmacies` — one row per pharmacy: name, admins' contact emails, created, plan, number of employees, last activity, shifts this month | staff |
 
 Platform endpoints are served by the same binary but use their own connection pool, as a database
 role that can call the stats functions and nothing else (ADR 0008).
@@ -214,6 +222,9 @@ Date ranges are capped (about two months) so no request scans a pharmacy's whole
   pharmacies that stopped using Turnia stand out. Desktop first; it still works on a phone.
 - **Offline** — the service worker keeps the last-seen week and hours, so the screen works in a
   basement stockroom.
+- **Signing in** — enter your email, then type the 6-digit code or tap the link in the email; the
+  code is what works in the installed iPhone app. Invited employees start from the invitation email.
+  You stay signed in for months on your own phone; "Cerrar sesión" on a shared computer.
 - **Language** — Spanish and Catalan. The user's choice is stored on their account; before login,
   the browser's language decides (`ca*` → Catalan, otherwise Spanish).
 
@@ -230,8 +241,10 @@ In rough order of value and effort:
    taking one back (a *cover* request).
 7. Billing per pharmacy with Lemon Squeezy (`pharmacies.plan` is the hook); staff change a
    pharmacy's plan from the dashboard. Two-factor sign-in (TOTP) for staff before any of that.
-8. Support access: a pharmacy admin grants Turnia staff temporary access to their pharmacy's data
+8. Sign in with Google, linked to existing accounts (ADR 0003), once tried in the installed app on an
+   iPhone.
+9. Support access: a pharmacy admin grants Turnia staff temporary access to their pharmacy's data
    to resolve an issue — time-limited, visible to the pharmacy, and audited.
-9. Import from the Excel file people already have.
-10. The *IA* in Turn*IA*: suggesting a schedule from constraints (contract hours, *guardia* rota,
+10. Import from the Excel file people already have.
+11. The *IA* in Turn*IA*: suggesting a schedule from constraints (contract hours, *guardia* rota,
     holidays).

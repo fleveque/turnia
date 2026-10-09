@@ -24,6 +24,7 @@ see [Learning](#learning).
 Three roles: **Turnia staff**, **pharmacy admins**, **employees**.
 - **Every shift change is recorded**: who, when, before and after.
 - **Each pharmacy's data is isolated** by the database itself, not only by the application.
+- **No passwords**: sign in with a code or link sent by email; employees are invited by their admin.
 
 The full picture is in [docs/design.md](docs/design.md); the reasons behind the choices are in
 [docs/decisions/](docs/decisions/README.md).
@@ -32,7 +33,7 @@ The full picture is in [docs/design.md](docs/design.md); the reasons behind the 
 
 | | |
 |---|---|
-| Backend | Go (standard library HTTP), PostgreSQL 18, pgx, sqlc, goose |
+| Backend | Go (standard library HTTP), PostgreSQL 18, pgx, sqlc, goose; email through Resend |
 | Frontend | React, TypeScript, Vite, TanStack Query, Tailwind CSS — as a PWA |
 | Deploy | One Hetzner VM: Caddy + the Go binary + Postgres, with Docker Compose |
 
@@ -58,9 +59,9 @@ Each milestone is one pull request, with a lesson and a code walkthrough.
 | 1 | Go server skeleton: config, logging, health check, errors, graceful shutdown | |
 | 2 | Postgres: pool, migrations, sqlc | |
 | 3 | Tenancy with row-level security | |
-| 4 | Auth I: register, login, access tokens, `/me` | |
-| 5 | Auth II: refresh tokens, logout, rate limit | |
-| 6 | Employees and pharmacy settings | |
+| 4 | Auth I: email codes and links, register, access tokens, `/me` | |
+| 5 | Auth II: refresh tokens, logout, rate limits | |
+| 6 | Employees, invitations, pharmacy settings | |
 | 7 | Shift types and shifts — the team sees all, admins edit | |
 | 8 | Audit log for shifts | |
 | 9 | Hours counters | |
@@ -82,7 +83,7 @@ Each milestone is one pull request, with a lesson and a code walkthrough.
 | 25 | Deploy | |
 
 After the MVP: editable shift types, public holidays, draft/published weeks, monthly hours and
-exports, push notifications, more swap modes, billing, Excel import, and the *IA* in Turn*IA* —
+exports, push notifications, more swap modes, Google sign-in, billing, Excel import, and the *IA* in Turn*IA* —
 suggested schedules. See [design §8](docs/design.md#8-out-of-scope-for-the-mvp-designed-for).
 
 ## Learning
