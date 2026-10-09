@@ -1,0 +1,24 @@
+# Go
+/backend/bin/
+*.test
+*.out
+
+# Node
+node_modules/
+/frontend/dist/
+/frontend/dev-dist/
+
+# Env files hold secrets; examples are committed as *.example
+.env
+.env.*
+!.env.example
+
+# Lesson page working files (the published artifact is the record)
+/docs/lessons/pages/*.built.html
+/docs/lessons/pages/template*.html
+/docs/lessons/pages/body*.html
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store

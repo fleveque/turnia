@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Grouped per ref so a push to a branch cancels only that branch's in-flight
+# run. A main run is never cancelled by a PR's.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Jobs for the Go backend and the frontend are added by the milestones that
+# bring their code.
+jobs:
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Cross-linked design docs, decisions and lessons: a moved file breaks
+      # navigation silently. Checks relative links only; external URLs are not
+      # fetched.
+      - name: Check relative links resolve
+        run: |
+          fail=0
+          while IFS= read -r file; do
+            dir="$(dirname "$file")"
+            while IFS= read -r link; do
+              target="${link%%#*}"
+              [ -z "$target" ] && continue
+              if [ ! -e "$dir/$target" ]; then
+                echo "::error file=$file::broken relative link: $link"
+                fail=1
+              fi
+            done < <(grep -oP '\]\(\K[^)]+' "$file" | grep -Ev '^(https?:|mailto:|#)')
+          done < <(find . -name '*.md' -not -path './.git/*' -not -path '*/node_modules/*')
+          exit "$fail"
