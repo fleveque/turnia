@@ -34,7 +34,7 @@ func TestUnknownAPIRouteIsAProblem(t *testing.T) {
 	if rec.Code != http.StatusNotFound {
 		t.Errorf("status = %d, want 404", rec.Code)
 	}
-	if ct := rec.Header().Get("Content-Type"); ct != "application/problem+json" {
+	if ct := rec.Result().Header.Get("Content-Type"); ct != "application/problem+json" {
 		t.Errorf("Content-Type = %q, want application/problem+json", ct)
 	}
 }

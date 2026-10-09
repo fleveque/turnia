@@ -22,7 +22,7 @@ func TestRecoverTurnsAPanicIntoA500(t *testing.T) {
 	if rec.Code != http.StatusInternalServerError {
 		t.Errorf("status = %d, want 500", rec.Code)
 	}
-	if ct := rec.Header().Get("Content-Type"); ct != "application/problem+json" {
+	if ct := rec.Result().Header.Get("Content-Type"); ct != "application/problem+json" {
 		t.Errorf("Content-Type = %q", ct)
 	}
 	for _, want := range []string{`"msg":"panic in handler"`, `"panic":"boom"`, `"path":"/api/v1/shifts"`, `"stack":`} {

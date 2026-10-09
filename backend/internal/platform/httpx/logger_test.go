@@ -127,7 +127,7 @@ func TestLoggerDoesNotChangeTheResponse(t *testing.T) {
 	if rec.Code != http.StatusCreated {
 		t.Errorf("client got status %d, want 201", rec.Code)
 	}
-	if got := rec.Header().Get("X-Shift"); got != "morning" {
+	if got := rec.Result().Header.Get("X-Shift"); got != "morning" {
 		t.Errorf("client got header X-Shift = %q, want morning", got)
 	}
 	if got := rec.Body.String(); got != "created" {

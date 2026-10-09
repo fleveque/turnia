@@ -15,7 +15,10 @@ func TestJSON(t *testing.T) {
 	if rec.Code != http.StatusCreated {
 		t.Errorf("status = %d, want 201", rec.Code)
 	}
-	if ct := rec.Header().Get("Content-Type"); ct != "application/json" {
+	// rec.Result().Header is what the client received: the headers as they
+	// were when the status was written. rec.Header() is the live map, which
+	// would also show a header set too late to be sent.
+	if ct := rec.Result().Header.Get("Content-Type"); ct != "application/json" {
 		t.Errorf("Content-Type = %q", ct)
 	}
 	if got := rec.Body.String(); got != `{"status":"ok"}`+"\n" {
@@ -35,7 +38,7 @@ func TestJSONThatCantBeEncodedIsA500(t *testing.T) {
 	if rec.Code != http.StatusInternalServerError {
 		t.Errorf("status = %d, want 500", rec.Code)
 	}
-	if ct := rec.Header().Get("Content-Type"); ct != "application/problem+json" {
+	if ct := rec.Result().Header.Get("Content-Type"); ct != "application/problem+json" {
 		t.Errorf("Content-Type = %q", ct)
 	}
 }
@@ -47,7 +50,7 @@ func TestError(t *testing.T) {
 	if rec.Code != http.StatusNotFound {
 		t.Errorf("status = %d, want 404", rec.Code)
 	}
-	if ct := rec.Header().Get("Content-Type"); ct != "application/problem+json" {
+	if ct := rec.Result().Header.Get("Content-Type"); ct != "application/problem+json" {
 		t.Errorf("Content-Type = %q", ct)
 	}
 	var p Problem
