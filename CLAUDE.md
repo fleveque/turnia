@@ -63,6 +63,11 @@ Review the author's `httpx.Logger`, then lesson + walkthrough 01. Milestone 2 �
   idea per exercise; prefer plain logic (functions, structs, slices, `time`) over framework
   machinery; scaffold the parts that need concepts not taught yet; explain in plain words and
   define every term used, in the stub's comments and in the walkthrough.
+- **The same when TypeScript and React start (milestone 14).** The author is new to both. First
+  exercises are plain TypeScript functions with Vitest tests: week dates from a day, minutes to
+  "7h 30min", grouping shifts by day. No JSX, hooks or React concepts until they've been taught;
+  then a component that only receives props and renders, before any state, effects or data
+  fetching.
 - **Decisions are ADRs** in `docs/decisions/NNNN-*.md`, indexed in its README.
 - **`main` is protected** like quantic-agent's: PR required (0 approvals), admins included, linear
   history, conversations resolved, required checks. Branch → PR → CI green → the author merges.
