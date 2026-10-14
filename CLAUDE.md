@@ -56,6 +56,13 @@ Review the author's `httpx.Logger`, then lesson + walkthrough 01. Milestone 2 �
   implementation kept out of the repo. CI is red until they push it; Claude reviews it on the PR,
   then the walkthrough and lesson use their code. Ask before each milestone which piece, if any,
   they want; the author took `httpx.Logger` in milestone 1.
+- **Exercises fit a Go beginner.** The author found the first version of the logger exercise too
+  hard: it needed two new concepts at once (how `http.ResponseWriter` sends a response, and
+  wrapping an interface with embedding) plus jargon. It was shrunk: Claude wrote `statusRecorder`,
+  the author writes the ~5-line handler body from four steps described in words. Rules: one new
+  idea per exercise; prefer plain logic (functions, structs, slices, `time`) over framework
+  machinery; scaffold the parts that need concepts not taught yet; explain in plain words and
+  define every term used, in the stub's comments and in the walkthrough.
 - **Decisions are ADRs** in `docs/decisions/NNNN-*.md`, indexed in its README.
 - **`main` is protected** like quantic-agent's: PR required (0 approvals), admins included, linear
   history, conversations resolved, required checks. Branch → PR → CI green → the author merges.
