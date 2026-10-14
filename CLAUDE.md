@@ -16,8 +16,9 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
 
 ## Next
 
-Milestone 2 — Postgres, as several small PRs (README roadmap). Plan the split and ask the author
-which piece, if any, they want to write before starting. Then the milestones in roadmap order.
+Milestone 2 — Postgres, in three PRs, each with an exercise: 2.1 migrations (`turnia migrate`;
+exercise: the `migrate` subcommand, following `serve`), 2.2 the pool (exercise: the health check
+reporting the database), 2.3 sqlc and the first queries (exercise: a query's test). Then the milestones in roadmap order.
 
 ## Conventions
 
@@ -52,11 +53,12 @@ which piece, if any, they want to write before starting. Then the milestones in 
   genuinely helps.
 - Every page uses the stylesheet in `docs/lessons/pages/` (carried over from quantic-agent). Reuse it,
   don't redesign it.
-- **"Your turn"**: a PR may offer one small, bounded piece the author writes themselves: a stub with
+- **"Your turn" in every PR**, unless a PR has nothing worth learning by writing it (the author's
+  choice, 2026-10-14). Each is one small, bounded piece the author writes themselves: a stub with
   its doc comment, plus the tests that specify it, checked beforehand against a reference
   implementation kept out of the repo. CI is red until they push it; Claude reviews it on the PR,
-  then the walkthrough and lesson use their code. Ask before each milestone which piece, if any,
-  they want; the author took `httpx.Logger` in milestone 1.
+  then the walkthrough and lesson use their code. When planning a milestone, propose one exercise
+  per PR and say why if a PR has none. The author took `httpx.Logger` in milestone 1.
 - **Exercises fit a Go beginner.** The author found the first version of the logger exercise too
   hard: it needed two new concepts at once (how `http.ResponseWriter` sends a response, and
   wrapping an interface with embedding) plus jargon. It was shrunk: Claude wrote `statusRecorder`,
@@ -101,6 +103,9 @@ which piece, if any, they want to write before starting. Then the milestones in 
   must connect as the non-owner app role.
 - `current_setting('app.x')` errors if the setting was never defined in the session, and returns
   `''` once a transaction-local `set_config` has ended — both fail closed with an `::uuid` cast.
+- goose's session locker (an advisory lock) is on in `db.Migrate`, but a test running 2 or 8
+  migrations at once passed *without* it too (2026-10-14): Postgres serialised the DDL itself. So
+  there's no test claiming the lock works; don't write one that can't fail.
 - A non-deferrable exclusion constraint is checked row by row, so exchanging the assignees of two
   overlapping shifts fails even in a single `UPDATE`. Declared `DEFERRABLE INITIALLY IMMEDIATE`
   and deferred in the swap transaction, it passes, and still rejects a swap that double-books at

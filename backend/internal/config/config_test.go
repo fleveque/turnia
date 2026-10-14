@@ -17,7 +17,13 @@ func TestLoadDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	want := Config{Addr: ":8080", LogLevel: slog.LevelInfo, LogFormat: "json", ShutdownTimeout: 10 * time.Second}
+	want := Config{
+		Addr:            ":8080",
+		LogLevel:        slog.LevelInfo,
+		LogFormat:       "json",
+		ShutdownTimeout: 10 * time.Second,
+		DatabaseURL:     "postgres://turnia:turnia@localhost:5433/turnia?sslmode=disable",
+	}
 	if cfg != want {
 		t.Errorf("got %+v, want %+v", cfg, want)
 	}
@@ -29,11 +35,18 @@ func TestLoadOverrides(t *testing.T) {
 		"TURNIA_LOG_LEVEL":        "debug",
 		"TURNIA_LOG_FORMAT":       "text",
 		"TURNIA_SHUTDOWN_TIMEOUT": "3s",
+		"TURNIA_DATABASE_URL":     "postgres://prod/turnia",
 	}))
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	want := Config{Addr: "127.0.0.1:9000", LogLevel: slog.LevelDebug, LogFormat: "text", ShutdownTimeout: 3 * time.Second}
+	want := Config{
+		Addr:            "127.0.0.1:9000",
+		LogLevel:        slog.LevelDebug,
+		LogFormat:       "text",
+		ShutdownTimeout: 3 * time.Second,
+		DatabaseURL:     "postgres://prod/turnia",
+	}
 	if cfg != want {
 		t.Errorf("got %+v, want %+v", cfg, want)
 	}
