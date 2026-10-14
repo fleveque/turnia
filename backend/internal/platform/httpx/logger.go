@@ -17,10 +17,15 @@ import (
 func Logger(log *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			t := time.Now()
-			statusRecorder := &statusRecorder{ResponseWriter: w}
-			next.ServeHTTP(statusRecorder, r)
-			log.Info("request", "method", r.Method, "path", r.URL.Path, "status", statusRecorder.Status(), "duration", time.Since(t))
+			start := time.Now()
+			rec := &statusRecorder{ResponseWriter: w}
+			next.ServeHTTP(rec, r)
+			log.Info("request",
+				"method", r.Method,
+				"path", r.URL.Path,
+				"status", rec.Status(),
+				"duration", time.Since(start),
+			)
 		})
 	}
 }
