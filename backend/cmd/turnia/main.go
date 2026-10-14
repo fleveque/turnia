@@ -1,8 +1,9 @@
 // Command turnia is the whole backend: one binary with subcommands.
 //
-//	turnia serve    run the HTTP server
+//	turnia serve      run the HTTP server
+//	turnia migrate    apply the database migrations
 //
-// migrate and seed arrive with the database (milestones 2 and 13).
+// seed arrives in milestone 13.
 package main
 
 import (
@@ -22,7 +23,8 @@ import (
 const usage = `usage: turnia <command>
 
 commands:
-  serve    run the HTTP server
+  serve      run the HTTP server
+  migrate    apply the database migrations
 `
 
 func main() {
@@ -40,6 +42,8 @@ func run(args []string, getenv func(string) string, stdout, stderr io.Writer) in
 	switch args[0] {
 	case "serve":
 		return serve(getenv, stdout, stderr)
+	case "migrate":
+		return migrate(getenv, stdout, stderr)
 	case "help", "-h", "--help":
 		fmt.Fprint(stdout, usage)
 		return 0
@@ -76,6 +80,28 @@ func serve(getenv func(string) string, stdout, stderr io.Writer) int {
 	}
 	log.Info("stopped")
 	return 0
+}
+
+// migrate applies the database migrations and exits: 0 if the database is
+// up to date afterwards, 1 if anything went wrong.
+//
+// YOUR TURN (milestone 2.1). It's serve, above, without the server. Four
+// steps:
+//
+//  1. Load the configuration exactly as serve does, with the same error
+//     message and exit code if it's invalid.
+//  2. Make the logger with newLogger, as serve does.
+//  3. Call db.Migrate(context.Background(), cfg.DatabaseURL, log).
+//     context.Background() is "no deadline, never cancelled". db is the
+//     package github.com/fleveque/turnia/backend/internal/platform/db;
+//     saving the file adds the import for you.
+//  4. If Migrate returns an error, log it with log.Error and return 1.
+//     Otherwise return 0.
+//
+// Then delete the two lines below.
+func migrate(getenv func(string) string, stdout, stderr io.Writer) int {
+	fmt.Fprintln(stderr, "turnia: migrate isn't written yet")
+	return 1
 }
 
 func newLogger(cfg config.Config, w io.Writer) *slog.Logger {

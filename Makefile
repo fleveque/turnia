@@ -4,6 +4,8 @@
 .DEFAULT_GOAL := help
 
 DB_URL ?= postgres://turnia:turnia@localhost:5433/turnia?sslmode=disable
+# Tests create a throwaway database per test on this server (dbtest.NewDatabase).
+export TURNIA_TEST_DATABASE_URL ?= postgres://turnia:turnia@localhost:5433/turnia_test?sslmode=disable
 
 .PHONY: help
 help: ## List the available targets
@@ -32,12 +34,16 @@ db-psql: ## Open psql on the development database
 run: ## Run the API server locally (text logs)
 	cd backend && TURNIA_LOG_FORMAT=text go run ./cmd/turnia serve
 
+.PHONY: migrate
+migrate: db-up ## Apply the database migrations to the development database
+	cd backend && TURNIA_LOG_FORMAT=text go run ./cmd/turnia migrate
+
 .PHONY: test
-test: ## Run the Go tests with the race detector
+test: db-up ## Run the Go tests with the race detector
 	cd backend && go test -race ./...
 
 .PHONY: check
-check: ## Everything CI checks for the backend: formatting, vet, tests
+check: db-up ## Everything CI checks for the backend: formatting, vet, tests
 	@cd backend && test -z "$$(gofmt -l .)" || { echo "gofmt needed:"; gofmt -l .; exit 1; }
 	cd backend && go vet ./...
 	cd backend && go test -race ./...

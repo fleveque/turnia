@@ -20,6 +20,24 @@ jobs:
       run:
         working-directory: backend
 
+    # Tests create their own database on this server (dbtest.NewDatabase).
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: turnia
+          POSTGRES_PASSWORD: turnia
+          POSTGRES_DB: turnia_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U turnia"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 15
+    env:
+      TURNIA_TEST_DATABASE_URL: postgres://turnia:turnia@localhost:5432/turnia_test?sslmode=disable
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,7 +47,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: backend/go.mod
-          cache-dependency-path: backend/go.mod
+          cache-dependency-path: backend/go.sum
 
       - name: Check formatting
         run: |

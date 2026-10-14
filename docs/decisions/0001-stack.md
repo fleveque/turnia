@@ -18,7 +18,7 @@ earn its place: each one is something to understand, not just to use.
 - **pgx** (v5) as the Postgres driver, used directly rather than through `database/sql`: native
   Postgres types (`tstzrange`, `jsonb`, UUIDs), a connection pool, and Postgres error codes we need
   (the exclusion constraint's `23P01` becomes a 409).
-- **sqlc**: SQL is written by hand in `db/queries/*.sql`; sqlc generates typed Go functions from
+- **sqlc**: SQL is written by hand in `internal/platform/db/queries/*.sql`; sqlc generates typed Go functions from
   it. No ORM. Every query that touches tenant data is plain to read and review, which matters
   because tenant isolation (ADR 0002) is the property we can least afford to get wrong.
 - **goose** for migrations, plain SQL files embedded in the binary; `turnia migrate` runs them.

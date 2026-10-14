@@ -109,8 +109,8 @@ These are not traded for convenience. Later sections refer to them as N1–N6.
 backend/                 Go module
   cmd/turnia/            the binary
   internal/              packages by feature: auth, employee, shift, … plus platform/ (db, httpx)
-  db/migrations/         goose migrations (embedded)
-  db/queries/            SQL that sqlc turns into Go
+  internal/platform/db/  migrations/ (goose, embedded in the binary) and, from milestone 2.3,
+                         queries/ (SQL that sqlc turns into Go)
   api/openapi.yaml       the API contract; the frontend's types come from it
 frontend/                Vite + React + TypeScript PWA
 config/deploy.yml        Kamal; secrets come from Bitwarden through .kamal/secrets
