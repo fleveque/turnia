@@ -5,18 +5,19 @@ pharmacy = one tenant), Spanish and Catalan. Open source, AGPL-3.0. It doubles a
 learning Go and React: the commit history and `docs/lessons` are the learning record. Start with
 [README.md](README.md) and [docs/design.md](docs/design.md).
 
-## Status — 2026-10-09
+## Status — 2026-10-14
 
 - Milestone 0 merged (#1): design, ADRs 0001–0008 (0004: Kamal to the shared VPS), compose
   Postgres on 5433, Makefile, lesson tooling, docs CI.
-- Milestone 1 (in progress): Go server skeleton — `internal/config`, `internal/platform/httpx`
-  (JSON, RFC 9457 problems, Recover), `internal/server` (routes, timeouts, graceful `Run`),
-  `cmd/turnia serve`. **The author is writing `httpx.Logger`** (their first "your turn"); its tests
-  fail on purpose until then. Lesson 01 and walkthrough 01 are written after their code lands.
+- Milestone 1 merged (#2): Go server skeleton — `internal/config`, `internal/platform/httpx` (JSON,
+  RFC 9457 problems, Recover, `statusRecorder`, and `Logger`, written by the author),
+  `internal/server` (routes, timeouts, graceful `Run`), `cmd/turnia serve`, `go.work` at the root.
+  Lesson 01 and walkthrough 01 published.
 
 ## Next
 
-Review the author's `httpx.Logger`, then lesson + walkthrough 01. Milestone 2 — Postgres (README roadmap). Then one milestone per PR, in roadmap order.
+Milestone 2 — Postgres, as several small PRs (README roadmap). Plan the split and ask the author
+which piece, if any, they want to write before starting. Then the milestones in roadmap order.
 
 ## Conventions
 
