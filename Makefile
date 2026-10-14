@@ -25,3 +25,19 @@ db-reset: ## Delete the development database volume and start again
 .PHONY: db-psql
 db-psql: ## Open psql on the development database
 	psql "$(DB_URL)"
+
+# --- backend -----------------------------------------------------------------
+
+.PHONY: run
+run: ## Run the API server locally (text logs)
+	cd backend && TURNIA_LOG_FORMAT=text go run ./cmd/turnia serve
+
+.PHONY: test
+test: ## Run the Go tests with the race detector
+	cd backend && go test -race ./...
+
+.PHONY: check
+check: ## Everything CI checks for the backend: formatting, vet, tests
+	@cd backend && test -z "$$(gofmt -l .)" || { echo "gofmt needed:"; gofmt -l .; exit 1; }
+	cd backend && go vet ./...
+	cd backend && go test -race ./...
