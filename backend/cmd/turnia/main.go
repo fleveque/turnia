@@ -17,6 +17,7 @@ import (
 	"syscall"
 
 	"github.com/fleveque/turnia/backend/internal/config"
+	"github.com/fleveque/turnia/backend/internal/platform/db"
 	"github.com/fleveque/turnia/backend/internal/server"
 )
 
@@ -84,24 +85,20 @@ func serve(getenv func(string) string, stdout, stderr io.Writer) int {
 
 // migrate applies the database migrations and exits: 0 if the database is
 // up to date afterwards, 1 if anything went wrong.
-//
-// YOUR TURN (milestone 2.1). It's serve, above, without the server. Four
-// steps:
-//
-//  1. Load the configuration exactly as serve does, with the same error
-//     message and exit code if it's invalid.
-//  2. Make the logger with newLogger, as serve does.
-//  3. Call db.Migrate(context.Background(), cfg.DatabaseURL, log).
-//     context.Background() is "no deadline, never cancelled". db is the
-//     package github.com/fleveque/turnia/backend/internal/platform/db;
-//     saving the file adds the import for you.
-//  4. If Migrate returns an error, log it with log.Error and return 1.
-//     Otherwise return 0.
-//
-// Then delete the two lines below.
 func migrate(getenv func(string) string, stdout, stderr io.Writer) int {
-	fmt.Fprintln(stderr, "turnia: migrate isn't written yet")
-	return 1
+	cfg, err := config.Load(getenv)
+	if err != nil {
+		fmt.Fprintf(stderr, "turnia: invalid configuration:\n%v\n", err)
+		return 1
+	}
+	log := newLogger(cfg, stdout)
+	slog.SetDefault(log)
+
+	if err = db.Migrate(context.Background(), cfg.DatabaseURL, log); err != nil {
+		log.Error("migrating", "err", err)
+		return 1
+	}
+	return 0
 }
 
 func newLogger(cfg config.Config, w io.Writer) *slog.Logger {
