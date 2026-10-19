@@ -23,6 +23,9 @@ type Config struct {
 	// ShutdownTimeout is how long in-flight requests get to finish after a
 	// stop signal before the server closes their connections.
 	ShutdownTimeout time.Duration
+	// DatabaseURL is the Postgres connection URL. The default is the
+	// development database from docker-compose.yml; production sets it.
+	DatabaseURL string
 }
 
 // Load builds a Config from getenv, which is os.Getenv in production and a
@@ -34,11 +37,15 @@ func Load(getenv func(string) string) (Config, error) {
 		LogLevel:        slog.LevelInfo,
 		LogFormat:       "json",
 		ShutdownTimeout: 10 * time.Second,
+		DatabaseURL:     "postgres://turnia:turnia@localhost:5433/turnia?sslmode=disable",
 	}
 	var errs []error
 
 	if v := getenv("TURNIA_ADDR"); v != "" {
 		cfg.Addr = v
+	}
+	if v := getenv("TURNIA_DATABASE_URL"); v != "" {
+		cfg.DatabaseURL = v
 	}
 	if v := getenv("TURNIA_LOG_LEVEL"); v != "" {
 		if err := cfg.LogLevel.UnmarshalText([]byte(v)); err != nil {

@@ -1,8 +1,9 @@
 // Command turnia is the whole backend: one binary with subcommands.
 //
-//	turnia serve    run the HTTP server
+//	turnia serve      run the HTTP server
+//	turnia migrate    apply the database migrations
 //
-// migrate and seed arrive with the database (milestones 2 and 13).
+// seed arrives in milestone 13.
 package main
 
 import (
@@ -16,13 +17,15 @@ import (
 	"syscall"
 
 	"github.com/fleveque/turnia/backend/internal/config"
+	"github.com/fleveque/turnia/backend/internal/platform/db"
 	"github.com/fleveque/turnia/backend/internal/server"
 )
 
 const usage = `usage: turnia <command>
 
 commands:
-  serve    run the HTTP server
+  serve      run the HTTP server
+  migrate    apply the database migrations
 `
 
 func main() {
@@ -40,6 +43,8 @@ func run(args []string, getenv func(string) string, stdout, stderr io.Writer) in
 	switch args[0] {
 	case "serve":
 		return serve(getenv, stdout, stderr)
+	case "migrate":
+		return migrate(getenv, stdout, stderr)
 	case "help", "-h", "--help":
 		fmt.Fprint(stdout, usage)
 		return 0
@@ -75,6 +80,24 @@ func serve(getenv func(string) string, stdout, stderr io.Writer) int {
 		return 1
 	}
 	log.Info("stopped")
+	return 0
+}
+
+// migrate applies the database migrations and exits: 0 if the database is
+// up to date afterwards, 1 if anything went wrong.
+func migrate(getenv func(string) string, stdout, stderr io.Writer) int {
+	cfg, err := config.Load(getenv)
+	if err != nil {
+		fmt.Fprintf(stderr, "turnia: invalid configuration:\n%v\n", err)
+		return 1
+	}
+	log := newLogger(cfg, stdout)
+	slog.SetDefault(log)
+
+	if err = db.Migrate(context.Background(), cfg.DatabaseURL, log); err != nil {
+		log.Error("migrating", "err", err)
+		return 1
+	}
 	return 0
 }
 
