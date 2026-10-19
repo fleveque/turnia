@@ -67,6 +67,13 @@ func serve(getenv func(string) string, stdout, stderr io.Writer) int {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	pool, err := db.Open(ctx, cfg.DatabaseURL)
+	if err != nil {
+		log.Error("opening the database", "err", err)
+		return 1
+	}
+	defer pool.Close()
+
 	ln, err := net.Listen("tcp", cfg.Addr)
 	if err != nil {
 		log.Error("listening", "addr", cfg.Addr, "err", err)
@@ -74,7 +81,7 @@ func serve(getenv func(string) string, stdout, stderr io.Writer) int {
 	}
 	log.Info("listening", "addr", ln.Addr().String())
 
-	srv := server.New(server.Handler(log), log)
+	srv := server.New(server.Handler(log, pool), log)
 	if err := server.Run(ctx, srv, ln, cfg.ShutdownTimeout); err != nil {
 		log.Error("server stopped", "err", err)
 		return 1

@@ -44,6 +44,25 @@ func TestServeRefusesInvalidConfiguration(t *testing.T) {
 	}
 }
 
+func TestServeFailsWhenTheDatabaseIsUnreachable(t *testing.T) {
+	getenv := func(k string) string {
+		switch k {
+		case "TURNIA_DATABASE_URL":
+			return "postgres://turnia:turnia@127.0.0.1:1/turnia?sslmode=disable&connect_timeout=2"
+		case "TURNIA_ADDR":
+			return "127.0.0.1:0"
+		}
+		return ""
+	}
+	var stdout, stderr bytes.Buffer
+	if code := run([]string{"serve"}, getenv, &stdout, &stderr); code != 1 {
+		t.Errorf("exit code = %d, want 1", code)
+	}
+	if !strings.Contains(stdout.String(), `"msg":"opening the database"`) {
+		t.Errorf("want the error in the log (stdout); got:\n%s", stdout.String())
+	}
+}
+
 // Tests for migrate, written before it: they're the specification.
 
 func TestMigrateRefusesInvalidConfiguration(t *testing.T) {
