@@ -50,26 +50,13 @@ func healthz(db Pinger, log *slog.Logger) http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(r.Context(), healthTimeout)
 		defer cancel()
 
-		// YOUR TURN (milestone 2.2). ctx, just above, is the request's
-		// context with a time limit of healthTimeout: if the database hasn't
-		// answered by then, Ping gives up and returns an error. Three steps:
-		//
-		//  1. Ask the database: call db.Ping(ctx). It returns an error, and
-		//     nil means the database answered.
-		//  2. If the error isn't nil: log it with
-		//     log.Warn("health check: database", "err", err), write the 503
-		//     with httpx.JSON(w, http.StatusServiceUnavailable,
-		//     map[string]string{"status": "unavailable"}), and return.
-		//     Don't put the error in the response: anyone can call this URL,
-		//     and the error can include the database's address.
-		//  3. Otherwise write {"status": "ok"} with http.StatusOK, as the
-		//     health check did before (git show main:backend/internal/server/server.go).
-		//
-		// Then delete the two lines below. The first is there because Go
-		// refuses to compile a variable that's never used: it uses ctx
-		// until your code does.
-		_ = ctx
-		httpx.Error(w, http.StatusNotImplemented, "the health check isn't written yet")
+		if err := db.Ping(ctx); err != nil {
+			log.Warn("health check: database", "err", err)
+			httpx.JSON(w, http.StatusServiceUnavailable, map[string]string{"status": "unavailable"})
+			return
+		}
+
+		httpx.JSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	}
 }
 
