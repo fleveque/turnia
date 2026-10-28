@@ -1,0 +1,20 @@
+# sqlc reads the schema from the migrations and the queries from queries/,
+# and writes typed Go next to the queries. Run it with `make generate`.
+version: "2"
+sql:
+  - engine: postgresql
+    schema: internal/platform/db/migrations
+    queries: internal/platform/db/queries
+    gen:
+      go:
+        package: queries
+        out: internal/platform/db/queries
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        # Plain Go types instead of pgx's pgtype wrappers, which exist for
+        # columns that can be NULL. These ones can't.
+        overrides:
+          - db_type: uuid
+            go_type: github.com/google/uuid.UUID
+          - db_type: timestamptz
+            go_type: time.Time

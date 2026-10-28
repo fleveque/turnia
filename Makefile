@@ -38,12 +38,17 @@ run: db-up ## Run the API server locally (text logs)
 migrate: db-up ## Apply the database migrations to the development database
 	cd backend && TURNIA_LOG_FORMAT=text go run ./cmd/turnia migrate
 
+.PHONY: generate
+generate: ## Regenerate the Go code sqlc writes from the SQL in queries/
+	cd backend && go tool sqlc generate
+
 .PHONY: test
 test: db-up ## Run the Go tests with the race detector
 	cd backend && go test -race ./...
 
 .PHONY: check
-check: db-up ## Everything CI checks for the backend: formatting, vet, tests
+check: db-up ## Everything CI checks for the backend: formatting, vet, generated code, tests
 	@cd backend && test -z "$$(gofmt -l .)" || { echo "gofmt needed:"; gofmt -l .; exit 1; }
 	cd backend && go vet ./...
+	cd backend && go tool sqlc diff
 	cd backend && go test -race ./...

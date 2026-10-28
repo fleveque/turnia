@@ -1,5 +1,6 @@
-// Package db is Turnia's access to Postgres. For now: the migrations, which
-// are SQL files built into the binary, and the code that applies them.
+// Package db is Turnia's access to Postgres: the migrations, which are SQL
+// files built into the binary, the code that applies them, and the
+// connection pool. The queries are in the queries package, below this one.
 package db
 
 import (

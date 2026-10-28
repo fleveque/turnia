@@ -5,7 +5,7 @@ pharmacy = one tenant), Spanish and Catalan. Open source, AGPL-3.0. It doubles a
 learning Go and React: the commit history and `docs/lessons` are the learning record. Start with
 [README.md](README.md) and [docs/design.md](docs/design.md).
 
-## Status — 2026-10-19
+## Status — 2026-10-28
 
 - Milestone 0 merged (#1): design, ADRs 0001–0008 (0004: Kamal to the shared VPS), compose
   Postgres on 5433, Makefile, lesson tooling, docs CI.
@@ -16,14 +16,17 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
 - Milestone 2.1 merged (#4): goose migrations embedded in the binary (`db.Migrate`), migration
   00001 (pharmacies, users), `dbtest.NewDatabase` (a database per test), `turnia migrate` (written
   by the author). Walkthrough 02.1 published.
-- Milestone 2.2 open (`milestone-2/pool`): `db.Open` (pgxpool, pings at start), `serve` fails fast
-  without a database, the health check takes a `server.Pinger`; its handler body is the author's
-  turn.
+- Milestone 2.2 merged (#5): `db.Open` (pgxpool, pings at start), `serve` fails fast without a
+  database, the health check takes a `server.Pinger` (its body written by the author).
+  Walkthrough 02.2 rebuilt from the merge commit.
+- Milestone 2.3 open (`milestone-2/sqlc`): sqlc as a `go tool`, package `queries`
+  (`CreatePharmacy`, `CreateUser`, `ListUsers`), uuid/time overrides, `make generate`, `sqlc diff`
+  in CI; the `ListUsers` test is the author's turn.
 
 ## Next
 
-Milestone 2 — Postgres: 2.2 the pool (exercise: the health check reporting the database), then
-2.3 sqlc and the first queries (exercise: a query's test). Then the milestones in roadmap order.
+Lesson 02 (Postgres) as its own PR once 2.3 is merged, then milestone 3 (tenancy with RLS): plan
+its PRs first.
 
 ## Conventions
 
@@ -108,6 +111,8 @@ Milestone 2 — Postgres: 2.2 the pool (exercise: the health check reporting the
   must connect as the non-owner app role.
 - `current_setting('app.x')` errors if the setting was never defined in the session, and returns
   `''` once a transaction-local `set_config` has ended — both fail closed with an `::uuid` cast.
+- sqlc's Postgres parser is C (pg_query_go), so `go tool sqlc` needs cgo and a C compiler, and
+  its first build takes about 1.5 CPU-minutes. Later runs come from the build cache.
 - goose's session locker (an advisory lock) is on in `db.Migrate`, but a test running 2 or 8
   migrations at once passed *without* it too (2026-10-14): Postgres serialised the DDL itself. So
   there's no test claiming the lock works; don't write one that can't fail.
