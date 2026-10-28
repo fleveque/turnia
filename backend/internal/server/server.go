@@ -14,11 +14,17 @@ import (
 	"github.com/fleveque/turnia/backend/internal/platform/httpx"
 )
 
+// Pinger is what the health check needs from the database: *pgxpool.Pool
+// has this method, and tests pass a fake that has it too.
+type Pinger interface {
+	Ping(ctx context.Context) error
+}
+
 // Handler returns the whole API: every route, wrapped in the middleware
 // every request goes through.
-func Handler(log *slog.Logger) http.Handler {
+func Handler(log *slog.Logger, db Pinger) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /api/v1/healthz", healthz)
+	mux.HandleFunc("GET /api/v1/healthz", healthz(db, log))
 
 	// Anything else under /api is a JSON 404, so API clients always get a
 	// Problem. (The rest of the paths will serve the PWA, from milestone 14.)
@@ -30,8 +36,28 @@ func Handler(log *slog.Logger) http.Handler {
 	return httpx.Logger(log)(httpx.Recover(log)(mux))
 }
 
-func healthz(w http.ResponseWriter, r *http.Request) {
-	httpx.JSON(w, http.StatusOK, map[string]string{"status": "ok"})
+// healthTimeout is how long the health check waits for the database. A
+// database that takes longer than this to answer "SELECT 1"-sized questions
+// is in trouble even if it isn't down.
+const healthTimeout = 2 * time.Second
+
+// healthz reports whether the server can reach its database: 200 with
+// {"status":"ok"} if db answers within healthTimeout, 503 with
+// {"status":"unavailable"} if it doesn't. The error goes to the log, never
+// to the response, which anyone can read.
+func healthz(db Pinger, log *slog.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), healthTimeout)
+		defer cancel()
+
+		if err := db.Ping(ctx); err != nil {
+			log.Warn("health check: database", "err", err)
+			httpx.JSON(w, http.StatusServiceUnavailable, map[string]string{"status": "unavailable"})
+			return
+		}
+
+		httpx.JSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	}
 }
 
 // New returns an http.Server for h with timeouts set. The zero http.Server

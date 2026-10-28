@@ -31,7 +31,7 @@ db-psql: ## Open psql on the development database
 # --- backend -----------------------------------------------------------------
 
 .PHONY: run
-run: ## Run the API server locally (text logs)
+run: db-up ## Run the API server locally (text logs)
 	cd backend && TURNIA_LOG_FORMAT=text go run ./cmd/turnia serve
 
 .PHONY: migrate

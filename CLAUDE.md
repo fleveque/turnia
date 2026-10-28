@@ -5,7 +5,7 @@ pharmacy = one tenant), Spanish and Catalan. Open source, AGPL-3.0. It doubles a
 learning Go and React: the commit history and `docs/lessons` are the learning record. Start with
 [README.md](README.md) and [docs/design.md](docs/design.md).
 
-## Status — 2026-10-14
+## Status — 2026-10-19
 
 - Milestone 0 merged (#1): design, ADRs 0001–0008 (0004: Kamal to the shared VPS), compose
   Postgres on 5433, Makefile, lesson tooling, docs CI.
@@ -13,12 +13,17 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
   RFC 9457 problems, Recover, `statusRecorder`, and `Logger`, written by the author),
   `internal/server` (routes, timeouts, graceful `Run`), `cmd/turnia serve`, `go.work` at the root.
   Lesson 01 and walkthrough 01 published.
+- Milestone 2.1 merged (#4): goose migrations embedded in the binary (`db.Migrate`), migration
+  00001 (pharmacies, users), `dbtest.NewDatabase` (a database per test), `turnia migrate` (written
+  by the author). Walkthrough 02.1 published.
+- Milestone 2.2 open (`milestone-2/pool`): `db.Open` (pgxpool, pings at start), `serve` fails fast
+  without a database, the health check takes a `server.Pinger`; its handler body is the author's
+  turn.
 
 ## Next
 
-Milestone 2 — Postgres, in three PRs, each with an exercise: 2.1 migrations (`turnia migrate`;
-exercise: the `migrate` subcommand, following `serve`), 2.2 the pool (exercise: the health check
-reporting the database), 2.3 sqlc and the first queries (exercise: a query's test). Then the milestones in roadmap order.
+Milestone 2 — Postgres: 2.2 the pool (exercise: the health check reporting the database), then
+2.3 sqlc and the first queries (exercise: a query's test). Then the milestones in roadmap order.
 
 ## Conventions
 
