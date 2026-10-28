@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -107,5 +108,25 @@ func TestCreateUserRejectsAnEmailThatDiffersOnlyInCase(t *testing.T) {
 //
 // Then delete the t.Fatal line.
 func TestListUsersReturnsOnePharmacysUsersByName(t *testing.T) {
-	t.Fatal("your turn: write this test (see the comment above it)")
+	q := newQueries(t)
+	sol := pharmacy(t, q, "Farmàcia del Sol")
+	user(t, q, sol.ID, "Marta")
+	user(t, q, sol.ID, "Jordi")
+	lluna := pharmacy(t, q, "Farmàcia de la Lluna")
+	user(t, q, lluna.ID, "Pau")
+
+	users, err := q.ListUsers(context.Background(), sol.ID)
+	if err != nil {
+		t.Fatalf("ListUsers: %v", err)
+	}
+
+	names := []string{}
+	for _, u := range users {
+		names = append(names, u.Name)
+	}
+
+	expected := []string{"Jordi", "Marta"}
+	if !slices.Equal(names, expected) {
+		t.Errorf("names = %v, want %v", names, expected)
+	}
 }
