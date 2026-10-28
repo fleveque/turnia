@@ -49,6 +49,11 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
 
+      # The role the server connects as (ADR 0002). Migrations grant to it,
+      # so it must exist before the tests migrate.
+      - name: Create the app role
+        run: psql "$TURNIA_TEST_DATABASE_URL" -q -v ON_ERROR_STOP=1 -f ../dev/postgres-init/02-app-role.sql
+
       - name: Check formatting
         run: |
           unformatted="$(gofmt -l .)"

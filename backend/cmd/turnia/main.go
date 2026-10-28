@@ -101,7 +101,7 @@ func migrate(getenv func(string) string, stdout, stderr io.Writer) int {
 	log := newLogger(cfg, stdout)
 	slog.SetDefault(log)
 
-	if err = db.Migrate(context.Background(), cfg.DatabaseURL, log); err != nil {
+	if err = db.Migrate(context.Background(), cfg.MigrateDatabaseURL, log); err != nil {
 		log.Error("migrating", "err", err)
 		return 1
 	}

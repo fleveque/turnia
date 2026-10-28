@@ -23,9 +23,14 @@ type Config struct {
 	// ShutdownTimeout is how long in-flight requests get to finish after a
 	// stop signal before the server closes their connections.
 	ShutdownTimeout time.Duration
-	// DatabaseURL is the Postgres connection URL. The default is the
-	// development database from docker-compose.yml; production sets it.
+	// DatabaseURL is the Postgres connection URL the server uses. It connects
+	// as turnia_app, which reads and writes rows but can't change the schema
+	// (ADR 0002). The default is the development database from
+	// docker-compose.yml; production sets it.
 	DatabaseURL string
+	// MigrateDatabaseURL is the connection URL `turnia migrate` uses. It
+	// connects as the tables' owner, the one role that may change the schema.
+	MigrateDatabaseURL string
 }
 
 // Load builds a Config from getenv, which is os.Getenv in production and a
@@ -37,7 +42,7 @@ func Load(getenv func(string) string) (Config, error) {
 		LogLevel:        slog.LevelInfo,
 		LogFormat:       "json",
 		ShutdownTimeout: 10 * time.Second,
-		DatabaseURL:     "postgres://turnia:turnia@localhost:5433/turnia?sslmode=disable",
+		DatabaseURL:     "postgres://turnia_app:turnia_app@localhost:5433/turnia?sslmode=disable",
 	}
 	var errs []error
 
@@ -47,6 +52,16 @@ func Load(getenv func(string) string) (Config, error) {
 	if v := getenv("TURNIA_DATABASE_URL"); v != "" {
 		cfg.DatabaseURL = v
 	}
+	// YOUR TURN (milestone 3.1): MigrateDatabaseURL, in two steps.
+	//
+	//  1. Give it a default in the cfg literal above: the same development
+	//     database as DatabaseURL, but as its owner, the user turnia with the
+	//     password turnia. (Only the user and password differ.)
+	//  2. Here, read TURNIA_MIGRATE_DATABASE_URL and, if it isn't empty, use
+	//     it instead, the way TURNIA_DATABASE_URL is read just above.
+	//
+	// The tests in config_test.go say what's expected; from backend/,
+	// `go test ./internal/config/` runs them.
 	if v := getenv("TURNIA_LOG_LEVEL"); v != "" {
 		if err := cfg.LogLevel.UnmarshalText([]byte(v)); err != nil {
 			errs = append(errs, fmt.Errorf("TURNIA_LOG_LEVEL: %w", err))

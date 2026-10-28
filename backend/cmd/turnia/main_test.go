@@ -84,7 +84,7 @@ func TestMigrateRefusesInvalidConfiguration(t *testing.T) {
 func TestMigrateAppliesTheMigrationsOnce(t *testing.T) {
 	url := dbtest.NewDatabase(t)
 	getenv := func(k string) string {
-		if k == "TURNIA_DATABASE_URL" {
+		if k == "TURNIA_MIGRATE_DATABASE_URL" {
 			return url
 		}
 		return ""
@@ -109,7 +109,7 @@ func TestMigrateAppliesTheMigrationsOnce(t *testing.T) {
 
 func TestMigrateFailsWhenTheDatabaseIsUnreachable(t *testing.T) {
 	getenv := func(k string) string {
-		if k == "TURNIA_DATABASE_URL" {
+		if k == "TURNIA_MIGRATE_DATABASE_URL" {
 			// Port 1: nothing listens there, so the connection is refused at once.
 			return "postgres://turnia:turnia@127.0.0.1:1/turnia?sslmode=disable&connect_timeout=2"
 		}
