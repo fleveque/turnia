@@ -4,8 +4,6 @@
 .DEFAULT_GOAL := help
 
 DB_URL ?= postgres://turnia:turnia@localhost:5433/turnia?sslmode=disable
-# Tests create a throwaway database per test on this server (dbtest.NewDatabase).
-export TURNIA_TEST_DATABASE_URL ?= postgres://turnia:turnia@localhost:5433/turnia_test?sslmode=disable
 
 .PHONY: help
 help: ## List the available targets
