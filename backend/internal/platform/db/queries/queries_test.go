@@ -91,22 +91,6 @@ func TestCreateUserRejectsAnEmailThatDiffersOnlyInCase(t *testing.T) {
 	}
 }
 
-// YOUR TURN (milestone 2.3). This test is empty: write it. It checks two
-// things about ListUsers (in users.sql): it returns only the users of the
-// pharmacy it's given, and it returns them in order of name.
-//
-//  1. Make the queries: q := newQueries(t).
-//  2. Make two pharmacies with the pharmacy helper above, say sol and lluna.
-//  3. Make three users with the user helper: "Marta" and then "Jordi" in
-//     sol (in that order, so the list has to sort them), and "Pau" in lluna.
-//  4. Call q.ListUsers(context.Background(), sol.ID). It returns a slice of
-//     users and an error: if the error isn't nil, t.Fatalf with it.
-//  5. Collect the users' names in a []string with a for loop (for _, u :=
-//     range users), and compare it with []string{"Jordi", "Marta"} using
-//     slices.Equal (add "slices" to the imports). If they're different,
-//     t.Errorf with both, so a failure says what came back.
-//
-// Then delete the t.Fatal line.
 func TestListUsersReturnsOnePharmacysUsersByName(t *testing.T) {
 	q := newQueries(t)
 	sol := pharmacy(t, q, "Farmàcia del Sol")
