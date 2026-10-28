@@ -19,14 +19,15 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
 - Milestone 2.2 merged (#5): `db.Open` (pgxpool, pings at start), `serve` fails fast without a
   database, the health check takes a `server.Pinger` (its body written by the author).
   Walkthrough 02.2 rebuilt from the merge commit.
-- Milestone 2.3 open (`milestone-2/sqlc`): sqlc as a `go tool`, package `queries`
-  (`CreatePharmacy`, `CreateUser`, `ListUsers`), uuid/time overrides, `make generate`, `sqlc diff`
-  in CI; the `ListUsers` test is the author's turn.
+- Milestone 2.3 merged (#6): sqlc as a `go tool`, package `queries` (`CreatePharmacy`,
+  `CreateUser`, `ListUsers`), uuid/time overrides, `make generate`, `sqlc diff` in CI; the
+  `ListUsers` test written by the author. `dbtest` falls back to the dev database and fails
+  instead of skipping. Walkthrough 02.3 rebuilt from the merge commit.
+- Lesson 02 open (`milestone-2/lesson`): "SQL in, Go out".
 
 ## Next
 
-Lesson 02 (Postgres) as its own PR once 2.3 is merged, then milestone 3 (tenancy with RLS): plan
-its PRs first.
+Milestone 3 — tenancy with row-level security: plan its PRs (one exercise each) before starting.
 
 ## Conventions
 
