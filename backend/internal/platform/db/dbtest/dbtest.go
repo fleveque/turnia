@@ -13,16 +13,20 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// defaultServer is the development Postgres from compose.yaml (`make db-up`).
+const defaultServer = "postgres://turnia:turnia@localhost:5433/turnia_test?sslmode=disable"
+
 // NewDatabase creates an empty database for this test, drops it when the
 // test ends, and returns its connection URL.
 //
-// It connects to the server named by TURNIA_TEST_DATABASE_URL (make test and
-// CI set it); without it, the test is skipped.
+// It connects to the server named by TURNIA_TEST_DATABASE_URL (CI sets it),
+// or to the development Postgres. If the server isn't there, the test fails:
+// a skipped test reports ok, which would hide a stopped database.
 func NewDatabase(t *testing.T) string {
 	t.Helper()
 	server := os.Getenv("TURNIA_TEST_DATABASE_URL")
 	if server == "" {
-		t.Skip("TURNIA_TEST_DATABASE_URL isn't set; `make test` sets it")
+		server = defaultServer
 	}
 
 	name := fmt.Sprintf("turnia_test_%x", rand.Uint64())
@@ -45,7 +49,7 @@ func exec(t *testing.T, server, sql string) {
 	ctx := context.Background()
 	conn, err := pgx.Connect(ctx, server)
 	if err != nil {
-		t.Fatalf("connecting to the test server: %v", err)
+		t.Fatalf("connecting to the test server (is it running? make db-up): %v", err)
 	}
 	defer conn.Close(ctx)
 	if _, err := conn.Exec(ctx, sql); err != nil {

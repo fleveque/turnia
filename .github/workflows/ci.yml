@@ -60,6 +60,11 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      # The generated queries are committed; a .sql changed without
+      # `make generate` fails here.
+      - name: Generated code is up to date
+        run: go tool sqlc diff
+
       - name: Test
         run: go test -race ./...
 
