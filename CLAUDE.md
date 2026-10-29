@@ -5,7 +5,7 @@ pharmacy = one tenant), Spanish and Catalan. Open source, AGPL-3.0. It doubles a
 learning Go and React: the commit history and `docs/lessons` are the learning record. Start with
 [README.md](README.md) and [docs/design.md](docs/design.md).
 
-## Status — 2026-10-28
+## Status — 2026-10-29
 
 - Milestone 0 merged (#1): design, ADRs 0001–0008 (0004: Kamal to the shared VPS), compose
   Postgres on 5433, Makefile, lesson tooling, docs CI.
@@ -24,17 +24,22 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
   `ListUsers` test written by the author. `dbtest` falls back to the dev database and fails
   instead of skipping. Walkthrough 02.3 rebuilt from the merge commit.
 - Lesson 02 merged (#7): "SQL in, Go out".
-- Milestone 3.1 open (`milestone-3/app-role`): role `turnia_app` (created by
+- Milestone 3.1 merged (#8): role `turnia_app` (created by
   `dev/postgres-init/02-app-role.sql`, rerun by `make db-up` and CI, since roles are cluster-wide),
   migration 00002 grants it row access only, `serve` connects as it and `migrate` as the owner
-  (`TURNIA_MIGRATE_DATABASE_URL`, written by the author), `dbtest.AppURL`.
+  (`TURNIA_MIGRATE_DATABASE_URL`, written by the author), `dbtest.AppURL`. Walkthrough 03.1
+  rebuilt from the merge commit.
+- Milestone 3.2 open (`milestone-3/policies`): migration 00003, RLS with `FORCE` on `users` and
+  `pharmacies`, policy `tenant_isolation` on `current_setting('app.pharmacy_id')::uuid`; the
+  `pharmacies` policy is the author's exercise. `tenancy_test.go` (`tenants`, `inTenant`) tests
+  as `turnia_app`; no test can catch a missing `FORCE` while the owner is a superuser.
 
 ## Next
 
 Milestone 3 — tenancy with row-level security, planned with the author (2026-10-28):
 
-- 3.1 `milestone-3/app-role` — above. Exercise: `MigrateDatabaseURL` in `config.Load`.
-- 3.2 `milestone-3/policies` — migration 00003: RLS with `FORCE` on `users` and `pharmacies`,
+- 3.1 `milestone-3/app-role` — merged, above.
+- 3.2 `milestone-3/policies` — open, above. Migration 00003: RLS with `FORCE` on `users` and `pharmacies`,
   policies on `current_setting('app.pharmacy_id')::uuid` (no `missing_ok`: no tenant is an
   error, not zero rows). Tests as `turnia_app`: no tenant errors, a `SELECT` without `WHERE` sees
   one pharmacy, writes to another are refused. Exercise: the `pharmacies` policy.
