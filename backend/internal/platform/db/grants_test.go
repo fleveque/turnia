@@ -25,15 +25,16 @@ func TestTheAppRoleUsesRowsButCantChangeTheSchema(t *testing.T) {
 	}
 	defer app.Close()
 
+	// Rows are only reachable inside a pharmacy (00003), so these run as sol.
 	allowed := []string{
-		"INSERT INTO pharmacies (name) VALUES ('Farmàcia del Sol')",
+		"INSERT INTO pharmacies (id, name) VALUES ('" + sol + "', 'Farmàcia del Sol')",
 		"SELECT * FROM pharmacies",
 		"UPDATE pharmacies SET swaps_enabled = true",
 		"SELECT * FROM users",
 		"DELETE FROM pharmacies",
 	}
 	for _, sql := range allowed {
-		if _, err := app.Exec(ctx, sql); err != nil {
+		if _, err := inTenant(t, app, sol, sql); err != nil {
 			t.Errorf("%s: %v", sql, err)
 		}
 	}
