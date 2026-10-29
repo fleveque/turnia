@@ -61,7 +61,7 @@ a pull request deploys it.
 | 0 | Repository, design, decisions | ✓ |
 | 1 | Go server skeleton: config, logging, health check, errors, graceful shutdown | ✓ |
 | 2 | Postgres: pool, migrations, sqlc | ✓ |
-| 3 | Tenancy with row-level security | |
+| 3 | Tenancy with row-level security | ✓ |
 | 4 | Deploy: image, Kamal, merge-to-deploy, backups — live on a beta host | |
 | 5 | Auth I: email codes and links, register, access tokens, `/me` | |
 | 6 | Auth II: refresh tokens, logout, rate limits | |
