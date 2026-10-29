@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -20,26 +20,24 @@ import (
 //
 // Pass fn's tx to queries.New to use the generated queries inside it.
 func WithTenant(ctx context.Context, pool *pgxpool.Pool, pharmacyID uuid.UUID, fn func(tx pgx.Tx) error) error {
-	// YOUR TURN (milestone 3.3): the body, in five steps. inTenant, in
-	// tenancy_test.go, does the first three for a test; here, errors are
-	// returned instead of failing a test, and a success is committed.
-	//
-	//  1. Begin a transaction: pool.Begin(ctx) returns a pgx.Tx and an error.
-	//     On an error, return it wrapped: fmt.Errorf("beginning the
-	//     transaction: %w", err).
-	//  2. defer tx.Rollback(ctx). It runs when WithTenant returns, however it
-	//     returns. After a commit it does nothing; otherwise it undoes the
-	//     transaction and gives its connection back to the pool.
-	//  3. Set the tenant: tx.Exec with "SELECT set_config('app.pharmacy_id',
-	//     $1, true)" and pharmacyID.String() as $1. On an error, return it
-	//     wrapped, "setting the tenant: %w".
-	//  4. Call fn(tx). If it returns an error, return that error as it is,
-	//     not wrapped, so callers can inspect it (a *pgconn.PgError, say).
-	//  5. Commit: tx.Commit(ctx). Return its error wrapped, "committing: %w",
-	//     or nil.
-	//
-	// The tests in tenant_test.go say what's expected; from backend/,
-	// `go test ./internal/platform/db/` runs them. (Replace "errors" with
-	// "fmt" in the imports; gopls does it on save.)
-	return errors.New("WithTenant isn't written yet")
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("beginning the transaction: %w", err)
+	}
+
+	defer tx.Rollback(ctx)
+
+	if _, err := tx.Exec(ctx, "SELECT set_config('app.pharmacy_id', $1, true)", pharmacyID.String()); err != nil {
+		return fmt.Errorf("setting the tenant: %w", err)
+	}
+
+	if err := fn(tx); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("committing: %w", err)
+	}
+
+	return nil
 }
