@@ -47,8 +47,20 @@ func tenants(t *testing.T) *pgxpool.Pool {
 	if err != nil {
 		t.Fatalf("Open: %v", err)
 	}
-	t.Cleanup(app.Close)
+	t.Cleanup(func() { closePool(t, app) })
 	return app
+}
+
+// closePool closes pool, unless a connection is still in use: that's a
+// transaction nobody ended, and Close would wait for it forever. Then it
+// fails the test instead, and dropping the test's database closes it.
+func closePool(t *testing.T, pool *pgxpool.Pool) {
+	t.Helper()
+	if n := pool.Stat().AcquiredConns(); n != 0 {
+		t.Errorf("%d connections still in use at the end of the test: a transaction was never ended", n)
+		return
+	}
+	pool.Close()
 }
 
 // inTenant runs sql with app.pharmacy_id set to pharmacyID, in a transaction
