@@ -33,10 +33,13 @@ func newQueries(t *testing.T) *queries.Queries {
 	return queries.New(pool)
 }
 
-// pharmacy creates a pharmacy called name.
+// pharmacy creates a pharmacy called name, with a new id.
 func pharmacy(t *testing.T, q *queries.Queries, name string) queries.Pharmacy {
 	t.Helper()
-	p, err := q.CreatePharmacy(context.Background(), name)
+	p, err := q.CreatePharmacy(context.Background(), queries.CreatePharmacyParams{
+		ID:   uuid.Must(uuid.NewV7()),
+		Name: name,
+	})
 	if err != nil {
 		t.Fatalf("CreatePharmacy(%q): %v", name, err)
 	}
@@ -62,10 +65,14 @@ func user(t *testing.T, q *queries.Queries, pharmacyID uuid.UUID, name string) q
 func TestCreatePharmacyFillsInTheDefaults(t *testing.T) {
 	q := newQueries(t)
 	before := time.Now()
-	p := pharmacy(t, q, "Farmàcia del Sol")
+	id := uuid.Must(uuid.NewV7())
+	p, err := q.CreatePharmacy(context.Background(), queries.CreatePharmacyParams{ID: id, Name: "Farmàcia del Sol"})
+	if err != nil {
+		t.Fatalf("CreatePharmacy: %v", err)
+	}
 
-	if p.ID == uuid.Nil {
-		t.Error("ID is empty; want the one Postgres generated")
+	if p.ID != id {
+		t.Errorf("ID = %v, want the one given, %v", p.ID, id)
 	}
 	if p.Name != "Farmàcia del Sol" || p.Timezone != "Europe/Madrid" || p.DefaultLocale != "es" || p.SwapsEnabled {
 		t.Errorf("got %+v, want the name given and the table's defaults", p)

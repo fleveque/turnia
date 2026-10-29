@@ -7,16 +7,26 @@ package queries
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const createPharmacy = `-- name: CreatePharmacy :one
-INSERT INTO pharmacies (name)
-VALUES ($1)
+INSERT INTO pharmacies (id, name)
+VALUES ($1, $2)
 RETURNING id, name, timezone, default_locale, plan, swaps_enabled, created_at
 `
 
-func (q *Queries) CreatePharmacy(ctx context.Context, name string) (Pharmacy, error) {
-	row := q.db.QueryRow(ctx, createPharmacy, name)
+type CreatePharmacyParams struct {
+	ID   uuid.UUID
+	Name string
+}
+
+// The id comes from Go, not the column's default: as turnia_app, a pharmacy
+// can only be inserted in a transaction whose tenant is already its id
+// (db.WithTenant, migration 00003), so the id must be known first.
+func (q *Queries) CreatePharmacy(ctx context.Context, arg CreatePharmacyParams) (Pharmacy, error) {
+	row := q.db.QueryRow(ctx, createPharmacy, arg.ID, arg.Name)
 	var i Pharmacy
 	err := row.Scan(
 		&i.ID,

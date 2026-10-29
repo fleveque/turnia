@@ -29,21 +29,26 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
   migration 00002 grants it row access only, `serve` connects as it and `migrate` as the owner
   (`TURNIA_MIGRATE_DATABASE_URL`, written by the author), `dbtest.AppURL`. Walkthrough 03.1
   rebuilt from the merge commit.
-- Milestone 3.2 open (`milestone-3/policies`): migration 00003, RLS with `FORCE` on `users` and
-  `pharmacies`, policy `tenant_isolation` on `current_setting('app.pharmacy_id')::uuid`; the
-  `pharmacies` policy is the author's exercise. `tenancy_test.go` (`tenants`, `inTenant`) tests
-  as `turnia_app`; no test can catch a missing `FORCE` while the owner is a superuser.
+- Milestone 3.2 merged (#9): migration 00003, RLS with `FORCE` on `users` and `pharmacies`,
+  policy `tenant_isolation` on `current_setting('app.pharmacy_id')::uuid` (the `pharmacies` one
+  written by the author). `tenancy_test.go` (`tenants`, `inTenant`) tests as `turnia_app`; no
+  test can catch a missing `FORCE` while the owner is a superuser. Walkthrough 03.2 rebuilt from
+  the merge commit.
+- Milestone 3.3 open (`milestone-3/with-tenant`): `db.WithTenant(ctx, pool, pharmacyID, fn
+  func(pgx.Tx) error)`, its body the author's exercise; `CreatePharmacy` takes its id
+  (`uuid.NewV7()` in Go). `closePool` in the tests reports a connection still in use instead of
+  hanging in `pgxpool.Pool.Close`.
 
 ## Next
 
 Milestone 3 — tenancy with row-level security, planned with the author (2026-10-28):
 
 - 3.1 `milestone-3/app-role` — merged, above.
-- 3.2 `milestone-3/policies` — open, above. Migration 00003: RLS with `FORCE` on `users` and `pharmacies`,
+- 3.2 `milestone-3/policies` — merged, above. Migration 00003: RLS with `FORCE` on `users` and `pharmacies`,
   policies on `current_setting('app.pharmacy_id')::uuid` (no `missing_ok`: no tenant is an
   error, not zero rows). Tests as `turnia_app`: no tenant errors, a `SELECT` without `WHERE` sees
   one pharmacy, writes to another are refused. Exercise: the `pharmacies` policy.
-- 3.3 `milestone-3/with-tenant` — `db.WithTenant(ctx, pool, pharmacyID, fn)`; `CreatePharmacy`
+- 3.3 `milestone-3/with-tenant` — open, above. `db.WithTenant(ctx, pool, pharmacyID, fn)`; `CreatePharmacy`
   takes its id from Go. Tests: isolation, rollback on error, nothing leaks to the next use of a
   pooled connection (one-connection pool). Exercise: `WithTenant`'s body, from five steps.
 - Lesson 03 as its own PR.
@@ -144,6 +149,8 @@ Milestone 3 — tenancy with row-level security, planned with the author (2026-1
   commit (tried 2026-10-09).
 - Since Postgres 15, `public` grants no `CREATE` to ordinary roles: the migration owner needs
   `GRANT CREATE, USAGE ON SCHEMA public` (or owns the schema).
+- `pgxpool.Pool.Close` waits for every acquired connection, so a transaction never ended hangs a
+  test at cleanup, with no message. Check `pool.Stat().AcquiredConns()` first (`closePool`).
 - New functions are executable by `PUBLIC` by default. Every `SECURITY DEFINER` function needs
   `REVOKE EXECUTE … FROM PUBLIC` and an explicit grant, or every role can call it.
 - A table owner with `FORCE ROW LEVEL SECURITY` is filtered too: a `SECURITY DEFINER` function owned
