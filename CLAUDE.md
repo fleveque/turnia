@@ -34,26 +34,18 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
   written by the author). `tenancy_test.go` (`tenants`, `inTenant`) tests as `turnia_app`; no
   test can catch a missing `FORCE` while the owner is a superuser. Walkthrough 03.2 rebuilt from
   the merge commit.
-- Milestone 3.3 open (`milestone-3/with-tenant`): `db.WithTenant(ctx, pool, pharmacyID, fn
-  func(pgx.Tx) error)`, its body the author's exercise; `CreatePharmacy` takes its id
-  (`uuid.NewV7()` in Go). `closePool` in the tests reports a connection still in use instead of
-  hanging in `pgxpool.Pool.Close`.
+- Milestone 3.3 merged (#10): `db.WithTenant(ctx, pool, pharmacyID, fn func(pgx.Tx) error)`
+  (its body written by the author); `CreatePharmacy` takes its id (`uuid.NewV7()` in Go).
+  `closePool` in the tests reports a connection still in use instead of hanging in
+  `pgxpool.Pool.Close`. Walkthrough 03.3 rebuilt from the merge commit.
+- Lesson 03 open (`lesson-03`): "One pharmacy at a time".
 
 ## Next
 
-Milestone 3 — tenancy with row-level security, planned with the author (2026-10-28):
-
-- 3.1 `milestone-3/app-role` — merged, above.
-- 3.2 `milestone-3/policies` — merged, above. Migration 00003: RLS with `FORCE` on `users` and `pharmacies`,
-  policies on `current_setting('app.pharmacy_id')::uuid` (no `missing_ok`: no tenant is an
-  error, not zero rows). Tests as `turnia_app`: no tenant errors, a `SELECT` without `WHERE` sees
-  one pharmacy, writes to another are refused. Exercise: the `pharmacies` policy.
-- 3.3 `milestone-3/with-tenant` — open, above. `db.WithTenant(ctx, pool, pharmacyID, fn)`; `CreatePharmacy`
-  takes its id from Go. Tests: isolation, rollback on error, nothing leaks to the next use of a
-  pooled connection (one-connection pool). Exercise: `WithTenant`'s body, from five steps.
-- Lesson 03 as its own PR.
-- Not in milestone 3: login's `SECURITY DEFINER` email lookup (milestone 5), production roles and
-  their passwords (milestone 4).
+Milestone 4 — deploy: image, Kamal, merge-to-deploy, backups, live on a beta host (see
+"Deploying" below). Plan its PRs with the author before starting. It brings production roles and
+their passwords: there the owner isn't a superuser, so `FORCE` on the RLS tables starts to apply.
+Still deferred: login's `SECURITY DEFINER` email lookup (milestone 5).
 
 ## Conventions
 
