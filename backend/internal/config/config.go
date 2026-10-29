@@ -38,11 +38,12 @@ type Config struct {
 // the first.
 func Load(getenv func(string) string) (Config, error) {
 	cfg := Config{
-		Addr:            ":8080",
-		LogLevel:        slog.LevelInfo,
-		LogFormat:       "json",
-		ShutdownTimeout: 10 * time.Second,
-		DatabaseURL:     "postgres://turnia_app:turnia_app@localhost:5433/turnia?sslmode=disable",
+		Addr:               ":8080",
+		LogLevel:           slog.LevelInfo,
+		LogFormat:          "json",
+		ShutdownTimeout:    10 * time.Second,
+		DatabaseURL:        "postgres://turnia_app:turnia_app@localhost:5433/turnia?sslmode=disable",
+		MigrateDatabaseURL: "postgres://turnia:turnia@localhost:5433/turnia?sslmode=disable",
 	}
 	var errs []error
 
@@ -52,16 +53,9 @@ func Load(getenv func(string) string) (Config, error) {
 	if v := getenv("TURNIA_DATABASE_URL"); v != "" {
 		cfg.DatabaseURL = v
 	}
-	// YOUR TURN (milestone 3.1): MigrateDatabaseURL, in two steps.
-	//
-	//  1. Give it a default in the cfg literal above: the same development
-	//     database as DatabaseURL, but as its owner, the user turnia with the
-	//     password turnia. (Only the user and password differ.)
-	//  2. Here, read TURNIA_MIGRATE_DATABASE_URL and, if it isn't empty, use
-	//     it instead, the way TURNIA_DATABASE_URL is read just above.
-	//
-	// The tests in config_test.go say what's expected; from backend/,
-	// `go test ./internal/config/` runs them.
+	if v := getenv("TURNIA_MIGRATE_DATABASE_URL"); v != "" {
+		cfg.MigrateDatabaseURL = v
+	}
 	if v := getenv("TURNIA_LOG_LEVEL"); v != "" {
 		if err := cfg.LogLevel.UnmarshalText([]byte(v)); err != nil {
 			errs = append(errs, fmt.Errorf("TURNIA_LOG_LEVEL: %w", err))
