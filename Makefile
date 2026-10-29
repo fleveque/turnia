@@ -46,6 +46,10 @@ generate: ## Regenerate the Go code sqlc writes from the SQL in queries/
 test: db-up ## Run the Go tests with the race detector
 	cd backend && go test -race ./...
 
+.PHONY: image
+image: ## Build the production image for this machine, tagged turnia:dev
+	docker build --build-arg REVISION=$$(git rev-parse HEAD) -t turnia:dev .
+
 .PHONY: check
 check: db-up ## Everything CI checks for the backend: formatting, vet, generated code, tests
 	@cd backend && test -z "$$(gofmt -l .)" || { echo "gofmt needed:"; gofmt -l .; exit 1; }

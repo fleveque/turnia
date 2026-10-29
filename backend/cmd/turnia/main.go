@@ -2,6 +2,7 @@
 //
 //	turnia serve      run the HTTP server
 //	turnia migrate    apply the database migrations
+//	turnia version    print the commit it was built from
 //
 // seed arrives in milestone 13.
 package main
@@ -26,6 +27,7 @@ const usage = `usage: turnia <command>
 commands:
   serve      run the HTTP server
   migrate    apply the database migrations
+  version    print the commit it was built from
 `
 
 func main() {
@@ -45,6 +47,9 @@ func run(args []string, getenv func(string) string, stdout, stderr io.Writer) in
 		return serve(getenv, stdout, stderr)
 	case "migrate":
 		return migrate(getenv, stdout, stderr)
+	case "version":
+		fmt.Fprintln(stdout, currentVersion())
+		return 0
 	case "help", "-h", "--help":
 		fmt.Fprint(stdout, usage)
 		return 0
@@ -79,7 +84,7 @@ func serve(getenv func(string) string, stdout, stderr io.Writer) int {
 		log.Error("listening", "addr", cfg.Addr, "err", err)
 		return 1
 	}
-	log.Info("listening", "addr", ln.Addr().String())
+	log.Info("listening", "addr", ln.Addr().String(), "version", currentVersion())
 
 	srv := server.New(server.Handler(log, pool), log)
 	if err := server.Run(ctx, srv, ln, cfg.ShutdownTimeout); err != nil {
