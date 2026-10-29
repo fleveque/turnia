@@ -12,6 +12,8 @@ help: ## List the available targets
 .PHONY: db-up
 db-up: ## Start the development Postgres and wait until it accepts connections
 	docker compose up -d --wait db
+	@# An existing volume never reruns postgres-init, so the role script runs here too.
+	docker compose exec -T db psql -q -v ON_ERROR_STOP=1 -U turnia -d turnia -f /docker-entrypoint-initdb.d/02-app-role.sql
 
 .PHONY: db-down
 db-down: ## Stop the development Postgres (data is kept)

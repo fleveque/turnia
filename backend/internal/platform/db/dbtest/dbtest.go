@@ -44,6 +44,19 @@ func NewDatabase(t *testing.T) string {
 	return u.String()
 }
 
+// AppURL is databaseURL with the user the server connects as, turnia_app,
+// and its development password (dev/postgres-init/02-app-role.sql). Tests
+// that should see what the server sees connect with it.
+func AppURL(t *testing.T, databaseURL string) string {
+	t.Helper()
+	u, err := url.Parse(databaseURL)
+	if err != nil {
+		t.Fatalf("AppURL: %v", err)
+	}
+	u.User = url.UserPassword("turnia_app", "turnia_app")
+	return u.String()
+}
+
 func exec(t *testing.T, server, sql string) {
 	t.Helper()
 	ctx := context.Background()

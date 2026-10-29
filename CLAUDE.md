@@ -23,11 +23,27 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
   `CreateUser`, `ListUsers`), uuid/time overrides, `make generate`, `sqlc diff` in CI; the
   `ListUsers` test written by the author. `dbtest` falls back to the dev database and fails
   instead of skipping. Walkthrough 02.3 rebuilt from the merge commit.
-- Lesson 02 open (`milestone-2/lesson`): "SQL in, Go out".
+- Lesson 02 merged (#7): "SQL in, Go out".
+- Milestone 3.1 open (`milestone-3/app-role`): role `turnia_app` (created by
+  `dev/postgres-init/02-app-role.sql`, rerun by `make db-up` and CI, since roles are cluster-wide),
+  migration 00002 grants it row access only, `serve` connects as it and `migrate` as the owner
+  (`TURNIA_MIGRATE_DATABASE_URL`, written by the author), `dbtest.AppURL`.
 
 ## Next
 
-Milestone 3 — tenancy with row-level security: plan its PRs (one exercise each) before starting.
+Milestone 3 — tenancy with row-level security, planned with the author (2026-10-28):
+
+- 3.1 `milestone-3/app-role` — above. Exercise: `MigrateDatabaseURL` in `config.Load`.
+- 3.2 `milestone-3/policies` — migration 00003: RLS with `FORCE` on `users` and `pharmacies`,
+  policies on `current_setting('app.pharmacy_id')::uuid` (no `missing_ok`: no tenant is an
+  error, not zero rows). Tests as `turnia_app`: no tenant errors, a `SELECT` without `WHERE` sees
+  one pharmacy, writes to another are refused. Exercise: the `pharmacies` policy.
+- 3.3 `milestone-3/with-tenant` — `db.WithTenant(ctx, pool, pharmacyID, fn)`; `CreatePharmacy`
+  takes its id from Go. Tests: isolation, rollback on error, nothing leaks to the next use of a
+  pooled connection (one-connection pool). Exercise: `WithTenant`'s body, from five steps.
+- Lesson 03 as its own PR.
+- Not in milestone 3: login's `SECURITY DEFINER` email lookup (milestone 5), production roles and
+  their passwords (milestone 4).
 
 ## Conventions
 
