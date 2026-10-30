@@ -46,8 +46,8 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
 
 ## Next
 
-Milestone 4 — deploy, planned with the author (2026-10-29). Hosts: `turnia.quantic.es` (Spanish)
-and `turnia.quantic.cat` (Catalan), both on the shared proxy; choosing the language from the host
+Milestone 4 — deploy, planned with the author (2026-10-29). Hosts: `turnia.leveque.es` (Spanish)
+and `turnia.leveque.cat` (Catalan), both on the shared proxy; choosing the language from the host
 for signed-out pages belongs to milestones 5 and 14.
 
 - 4.1 `milestone-4/image` — open, above. Exercise: `version`, from Go's build info.
