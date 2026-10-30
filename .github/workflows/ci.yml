@@ -73,6 +73,24 @@ jobs:
       - name: Test
         run: go test -race ./...
 
+  # The image the server runs (ADR 0004), built for its platform, arm64, and
+  # not pushed: a Dockerfile that stops building fails the PR that broke it,
+  # not the deploy after the merge. Go cross-compiles and the final stage
+  # only copies files, so no arm64 emulation is needed.
+  image:
+    name: image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build for linux/arm64
+        run: docker buildx build --platform linux/arm64 --build-arg REVISION=${{ github.sha }} .
+
   docs:
     name: docs
     runs-on: ubuntu-latest

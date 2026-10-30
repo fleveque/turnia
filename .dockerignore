@@ -1,0 +1,8 @@
+# What the image build may see: the backend's source, and from milestone 14
+# the frontend's. Everything else stays out, so it can't end up in a layer
+# and changing it doesn't invalidate the build cache.
+*
+!backend/
+backend/bin/
+backend/turnia
+**/*_test.go

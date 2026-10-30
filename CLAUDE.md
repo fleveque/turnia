@@ -38,14 +38,37 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
   (its body written by the author); `CreatePharmacy` takes its id (`uuid.NewV7()` in Go).
   `closePool` in the tests reports a connection still in use instead of hanging in
   `pgxpool.Pool.Close`. Walkthrough 03.3 rebuilt from the merge commit.
-- Lesson 03 open (`lesson-03`): "One pharmacy at a time".
+- Lesson 03 merged (#11): "One pharmacy at a time".
+- Milestone 4.1 open (`milestone-4/image`): `Dockerfile` (cross-compiled static binary on
+  distroless `static-debian12:nonroot`, commit passed as `REVISION` and set with `-ldflags -X
+  main.revision`), `.dockerignore`, `make image`, CI job `image` (linux/arm64, not pushed).
+  `turnia version` (its `version` function the author's exercise); `serve` logs the version.
 
 ## Next
 
-Milestone 4 — deploy: image, Kamal, merge-to-deploy, backups, live on a beta host (see
-"Deploying" below). Plan its PRs with the author before starting. It brings production roles and
-their passwords: there the owner isn't a superuser, so `FORCE` on the RLS tables starts to apply.
-Still deferred: login's `SECURITY DEFINER` email lookup (milestone 5).
+Milestone 4 — deploy, planned with the author (2026-10-29). Hosts: `turnia.leveque.es` (Spanish)
+and `turnia.leveque.cat` (Catalan), both on the shared proxy; choosing the language from the host
+for signed-out pages belongs to milestones 5 and 14.
+
+- 4.1 `milestone-4/image` — open, above. Exercise: `version`, from Go's build info.
+- 4.2 `milestone-4/prod-roles` — the Postgres accessory's init script creates a non-superuser
+  owner and `turnia_app`, passwords from secrets. A test migrates as a non-superuser owner and
+  shows `FORCE` filtering it, the test 3.2 couldn't have. Exercise: that test's assertions.
+- 4.3 `milestone-4/kamal` — `config/deploy.yml`, `.kamal/secrets` (Bitwarden item `turnia`),
+  `docs/deploy.md` with quantic's safety rules, proxy health check on `/api/v1/healthz`.
+  **Migrations run before the new container boots, in a one-off container that holds only the
+  owner URL** (the author's choice (a), 2026-10-29, keeping 3.1's rule that the server holds only
+  the weaker URL); start with a spike on how a Kamal 2 pre-deploy hook gets that secret, and if
+  it's clumsy, fall back to migrating on boot and say so. Amend ADR 0004 either way. The author
+  runs the first `kamal setup` (their shared server; Claude doesn't run commands against it).
+- 4.4 `milestone-4/deploy-workflow` — `deploy.yml` adapted from quantic's (bot refusal,
+  Bitwarden, deploy key, SSH alias, blocking pre-deploy `pg_dump`, `[skip-snapshot]` in the
+  merge title, native ARM runner). No code exercise; the author sets the repo secrets.
+- 4.5 `milestone-4/backups` — Turnia's own `ops/backup/` (restic to the NAS, append-only, its
+  own repository and HTTP user, monthly restore drill), `docs/backup.md`. The author sets up the
+  NAS user and runs the first drill.
+- Lesson 04 as its own PR. Still deferred: login's `SECURITY DEFINER` email lookup (milestone 5),
+  `turnia_platform` (milestone 12).
 
 ## Conventions
 
