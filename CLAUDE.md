@@ -39,10 +39,16 @@ learning Go and React: the commit history and `docs/lessons` are the learning re
   `closePool` in the tests reports a connection still in use instead of hanging in
   `pgxpool.Pool.Close`. Walkthrough 03.3 rebuilt from the merge commit.
 - Lesson 03 merged (#11): "One pharmacy at a time".
-- Milestone 4.1 open (`milestone-4/image`): `Dockerfile` (cross-compiled static binary on
-  distroless `static-debian12:nonroot`, commit passed as `REVISION` and set with `-ldflags -X
+- Milestone 4.1 merged (#12): `Dockerfile` (cross-compiled static binary on distroless
+  `static-debian12:nonroot`, commit passed as `REVISION` and set with `-ldflags -X
   main.revision`), `.dockerignore`, `make image`, CI job `image` (linux/arm64, not pushed).
-  `turnia version` (its `version` function the author's exercise); `serve` logs the version.
+  `turnia version` (its `version` function written by the author); `serve` logs the version.
+  Walkthrough 04.1 rebuilt from the merge commit.
+- Milestone 4.2 open (`milestone-4/prod-roles`): `deploy/postgres/01-roles.sql` creates
+  `turnia_owner` and `turnia_app` with passwords from the environment, and development, CI and
+  production all run that one file; `02-database.sql` is production's database.
+  `dbtest.NewOwnedDatabase`, and `owner_test.go` shows `FORCE` filtering a non-superuser owner
+  (`TestForceFiltersTheOwner`'s assertions are the author's exercise).
 
 ## Next
 
@@ -50,10 +56,7 @@ Milestone 4 — deploy, planned with the author (2026-10-29). Hosts: `turnia.lev
 and `turnia.leveque.cat` (Catalan), both on the shared proxy; choosing the language from the host
 for signed-out pages belongs to milestones 5 and 14.
 
-- 4.1 `milestone-4/image` — open, above. Exercise: `version`, from Go's build info.
-- 4.2 `milestone-4/prod-roles` — the Postgres accessory's init script creates a non-superuser
-  owner and `turnia_app`, passwords from secrets. A test migrates as a non-superuser owner and
-  shows `FORCE` filtering it, the test 3.2 couldn't have. Exercise: that test's assertions.
+- 4.2 `milestone-4/prod-roles` — open, above. Exercise: the assertions of the `FORCE` test.
 - 4.3 `milestone-4/kamal` — `config/deploy.yml`, `.kamal/secrets` (Bitwarden item `turnia`),
   `docs/deploy.md` with quantic's safety rules, proxy health check on `/api/v1/healthz`.
   **Migrations run before the new container boots, in a one-off container that holds only the
@@ -61,6 +64,8 @@ for signed-out pages belongs to milestones 5 and 14.
   the weaker URL); start with a spike on how a Kamal 2 pre-deploy hook gets that secret, and if
   it's clumsy, fall back to migrating on boot and say so. Amend ADR 0004 either way. The author
   runs the first `kamal setup` (their shared server; Claude doesn't run commands against it).
+  The accessory mounts `deploy/postgres/*.sql` into `/docker-entrypoint-initdb.d` and needs
+  `TURNIA_OWNER_PASSWORD` and `TURNIA_APP_PASSWORD`, plus its own superuser password.
 - 4.4 `milestone-4/deploy-workflow` — `deploy.yml` adapted from quantic's (bot refusal,
   Bitwarden, deploy key, SSH alias, blocking pre-deploy `pg_dump`, `[skip-snapshot]` in the
   merge title, native ARM runner). No code exercise; the author sets the repo secrets.
@@ -164,6 +169,12 @@ for signed-out pages belongs to milestones 5 and 14.
   commit (tried 2026-10-09).
 - Since Postgres 15, `public` grants no `CREATE` to ordinary roles: the migration owner needs
   `GRANT CREATE, USAGE ON SCHEMA public` (or owns the schema).
+- psql doesn't substitute variables inside `$$` blocks, so `DO` can't use a password from one.
+  `\getenv` plus `SELECT format(… %L, :'var') WHERE NOT EXISTS (…) \gexec` is safe to run twice.
+- A failed `/docker-entrypoint-initdb.d` script isn't retried: the data directory is already
+  there, so the next start logs "Skipping initialization" and runs with no roles (tried
+  2026-10-30). After a failed first boot, the accessory's volume has to be deleted, and that's
+  Turnia's own volume only.
 - `pgxpool.Pool.Close` waits for every acquired connection, so a transaction never ended hangs a
   test at cleanup, with no message. Check `pool.Stat().AcquiredConns()` first (`closePool`).
 - New functions are executable by `PUBLIC` by default. Every `SECURITY DEFINER` function needs
