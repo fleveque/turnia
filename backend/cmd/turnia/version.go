@@ -16,23 +16,34 @@ var revision string
 // "true" if files had uncommitted changes, which adds "-dirty". With neither,
 // it's "unknown".
 func version(stamped string, info *debug.BuildInfo) string {
-	// YOUR TURN (milestone 4.1): the body, in four steps.
-	//
-	//  1. If stamped isn't "", return it.
-	//  2. If info is nil (no build info at all), return "unknown".
-	//  3. info.Settings is a slice of debug.BuildSetting, a struct with two
-	//     string fields, Key and Value. Go through it with
-	//     `for _, s := range info.Settings { … }` and remember two things:
-	//     the Value of the setting whose Key is "vcs.revision", and whether
-	//     the setting whose Key is "vcs.modified" has the Value "true".
-	//     (Other settings, like "GOARCH", are there too; skip them.)
-	//  4. If no revision was found, return "unknown". If there was one and
-	//     the files were modified, return the revision followed by "-dirty".
-	//     Otherwise, return the revision.
-	//
-	// The tests in version_test.go say what's expected; from backend/,
-	// `go test ./cmd/turnia/` runs them.
-	return ""
+	if stamped != "" {
+		return stamped
+	}
+
+	if info == nil {
+		return "unknown"
+	}
+
+	var rev string
+	var dirty bool
+	for _, s := range info.Settings {
+		switch s.Key {
+		case "vcs.revision":
+			rev = s.Value
+		case "vcs.modified":
+			dirty = s.Value == "true"
+		}
+	}
+
+	if rev == "" {
+		return "unknown"
+	}
+
+	if dirty {
+		return rev + "-dirty"
+	}
+
+	return rev
 }
 
 // currentVersion is version for this binary.
