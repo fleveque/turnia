@@ -9,13 +9,17 @@ services:
       POSTGRES_USER: turnia
       POSTGRES_PASSWORD: turnia
       POSTGRES_DB: turnia
+      # For deploy/postgres/01-roles.sql. Production's are in Bitwarden.
+      TURNIA_OWNER_PASSWORD: turnia_owner
+      TURNIA_APP_PASSWORD: turnia_app
     ports:
       - "5433:5432"
     volumes:
       # Postgres 18 images keep data under a versioned subdirectory of
       # /var/lib/postgresql, so the volume mounts the parent.
       - db-data:/var/lib/postgresql
-      - ./dev/postgres-init:/docker-entrypoint-initdb.d:ro
+      - ./dev/postgres-init/01-test-db.sql:/docker-entrypoint-initdb.d/01-test-db.sql:ro
+      - ./deploy/postgres/01-roles.sql:/docker-entrypoint-initdb.d/02-roles.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U turnia -d turnia"]
       interval: 2s

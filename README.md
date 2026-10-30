@@ -44,7 +44,7 @@ Requirements: Go 1.27+, Node 24+, Docker.
 
 ```sh
 make            # list every task
-make db-up      # start Postgres 18 on localhost:5433 (databases turnia and turnia_test, role turnia_app)
+make db-up      # start Postgres 18 on localhost:5433 (databases turnia and turnia_test, roles turnia_owner and turnia_app)
 make db-psql    # open psql on it
 ```
 
